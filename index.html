@@ -1,1 +1,2994 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Video Studio - Realistic Video Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a2e;
+            --bg-card: #16162a;
+            --accent-primary: #7c3aed;
+            --accent-secondary: #a855f7;
+            --accent-glow: rgba(124, 58, 237, 0.3);
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-pink: #ec4899;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(124, 58, 237, 0.4);
+            --glass: rgba(255, 255, 255, 0.03);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .bg-orb:nth-child(1) {
+            width: 600px;
+            height: 600px;
+            background: var(--accent-primary);
+            top: -200px;
+            right: -200px;
+            animation-delay: 0s;
+        }
+
+        .bg-orb:nth-child(2) {
+            width: 500px;
+            height: 500px;
+            background: var(--accent-cyan);
+            bottom: -150px;
+            left: -150px;
+            animation-delay: -7s;
+        }
+
+        .bg-orb:nth-child(3) {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-pink);
+            top: 50%;
+            left: 50%;
+            animation-delay: -14s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, -50px) scale(1.1); }
+            50% { transform: translate(-30px, 30px) scale(0.95); }
+            75% { transform: translate(40px, 40px) scale(1.05); }
+        }
+
+        /* Grid pattern overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Main Layout */
+        .app-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            background: rgba(10, 10, 15, 0.8);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-pink));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-badge {
+            font-size: 10px;
+            padding: 3px 8px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-pink));
+            border-radius: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: white;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-btn {
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--glass);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .header-btn:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background: rgba(124, 58, 237, 0.1);
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .status-dot.offline {
+            background: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+
+        .status-dot.connecting {
+            background: var(--accent-orange);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex: 1;
+            gap: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 340px;
+            min-width: 340px;
+            border-right: 1px solid var(--border);
+            background: rgba(18, 18, 26, 0.5);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            height: calc(100vh - 73px);
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .sidebar-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            font-size: 12px;
+            color: var(--accent-secondary);
+        }
+
+        /* Prompt Area */
+        .prompt-container {
+            position: relative;
+        }
+
+        .prompt-textarea {
+            width: 100%;
+            min-height: 140px;
+            padding: 16px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            resize: vertical;
+            transition: all 0.3s;
+        }
+
+        .prompt-textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-glow), inset 0 0 20px rgba(124, 58, 237, 0.05);
+        }
+
+        .prompt-textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .prompt-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .prompt-chip {
+            padding: 5px 12px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .prompt-chip:hover {
+            background: rgba(124, 58, 237, 0.15);
+            border-color: var(--accent-primary);
+            color: var(--accent-secondary);
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* Negative Prompt */
+        .negative-prompt {
+            width: 100%;
+            min-height: 60px;
+            padding: 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+            resize: vertical;
+            transition: all 0.3s;
+        }
+
+        .negative-prompt:focus {
+            outline: none;
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+        }
+
+        /* Settings Controls */
+        .control-group {
+            margin-bottom: 16px;
+        }
+
+        .control-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .control-value {
+            font-weight: 700;
+            color: var(--accent-secondary);
+            font-size: 12px;
+        }
+
+        .control-select {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+
+        .control-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        /* Range Slider */
+        .range-slider {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--bg-primary);
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-glow);
+            transition: transform 0.2s;
+        }
+
+        .range-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Radio/Toggle Grid */
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .option-grid.three-col {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .option-btn {
+            padding: 10px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .option-btn:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+        }
+
+        .option-btn.active {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(168, 85, 247, 0.1));
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .option-btn .opt-icon {
+            font-size: 16px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* Style Presets */
+        .style-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .style-card {
+            padding: 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .style-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .style-card.active {
+            border-color: var(--accent-primary);
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(168, 85, 247, 0.05));
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .style-icon {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .style-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .style-desc {
+            font-size: 9px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Generate Button */
+        .generate-section {
+            padding: 20px;
+            margin-top: auto;
+            border-top: 1px solid var(--border);
+            background: rgba(10, 10, 15, 0.5);
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-pink));
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .generate-btn:hover::before {
+            left: 100%;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(124, 58, 237, 0.4);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .generate-btn:disabled::before {
+            display: none;
+        }
+
+        .credits-info {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        /* Canvas/Preview Area */
+        .preview-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            position: relative;
+        }
+
+        .preview-toolbar {
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            background: rgba(18, 18, 26, 0.3);
+        }
+
+        .preview-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-primary);
+            padding: 4px;
+            border-radius: 10px;
+        }
+
+        .preview-tab {
+            padding: 7px 16px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .preview-tab.active {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .preview-tab:hover:not(.active) {
+            color: var(--text-primary);
+        }
+
+        .preview-tools {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tool-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--glass);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .tool-btn:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+            background: rgba(124, 58, 237, 0.1);
+        }
+
+        /* Preview Canvas */
+        .preview-canvas {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            position: relative;
+        }
+
+        .canvas-frame {
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 16/9;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+        }
+
+        .canvas-frame.ratio-9-16 {
+            max-width: 400px;
+            aspect-ratio: 9/16;
+        }
+
+        .canvas-frame.ratio-1-1 {
+            max-width: 500px;
+            aspect-ratio: 1/1;
+        }
+
+        .canvas-placeholder {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .canvas-placeholder .icon {
+            font-size: 60px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .canvas-placeholder h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .canvas-placeholder p {
+            font-size: 13px;
+            color: var(--text-muted);
+            max-width: 350px;
+            line-height: 1.6;
+        }
+
+        /* Loading/Generation States */
+        .generation-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 15, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 10;
+            border-radius: 16px;
+        }
+
+        .generation-overlay.active {
+            display: flex;
+        }
+
+        .gen-spinner {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .gen-spinner::before,
+        .gen-spinner::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        .gen-spinner::before {
+            width: 100%;
+            height: 100%;
+            border: 3px solid transparent;
+            border-top-color: var(--accent-primary);
+            border-right-color: var(--accent-pink);
+            animation: spin 1s linear infinite;
+        }
+
+        .gen-spinner::after {
+            width: 60%;
+            height: 60%;
+            top: 20%;
+            left: 20%;
+            border: 3px solid transparent;
+            border-bottom-color: var(--accent-cyan);
+            border-left-color: var(--accent-secondary);
+            animation: spin 0.8s linear infinite reverse;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .gen-status {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .gen-substatus {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .gen-progress-bar {
+            width: 250px;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .gen-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-pink));
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .gen-steps {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 250px;
+        }
+
+        .gen-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .gen-step.active {
+            color: var(--accent-secondary);
+        }
+
+        .gen-step.done {
+            color: var(--accent-green);
+        }
+
+        .gen-step i {
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Video Result */
+        .video-result {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 16px;
+            display: none;
+        }
+
+        .result-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+            display: none;
+        }
+
+        /* Video Controls */
+        .video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 20px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            display: none;
+            align-items: center;
+            gap: 12px;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .video-controls.active {
+            display: flex;
+        }
+
+        .v-ctrl-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+
+        .v-ctrl-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .v-timeline {
+            flex: 1;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .v-timeline-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            border-radius: 2px;
+            width: 0%;
+        }
+
+        .v-time {
+            font-size: 11px;
+            color: rgba(255,255,255,0.7);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Right Panel - History */
+        .right-panel {
+            width: 280px;
+            min-width: 280px;
+            border-left: 1px solid var(--border);
+            background: rgba(18, 18, 26, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            height: calc(100vh - 73px);
+        }
+
+        .right-panel::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .right-panel::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .history-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .history-item:hover {
+            background: rgba(124, 58, 237, 0.05);
+        }
+
+        .history-item.active {
+            background: rgba(124, 58, 237, 0.1);
+            border-left: 3px solid var(--accent-primary);
+        }
+
+        .history-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .history-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .history-thumb .duration {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            padding: 2px 6px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .history-prompt {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .history-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 6px;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow);
+        }
+
+        .modal h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .modal p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .modal-input-group {
+            margin-bottom: 16px;
+        }
+
+        .modal-input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--glass);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-pink));
+            border: none;
+            color: white;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 14px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--text-primary);
+            box-shadow: var(--shadow);
+            animation: slideIn 0.3s ease;
+            min-width: 300px;
+        }
+
+        .toast.success {
+            border-left: 3px solid var(--accent-green);
+        }
+
+        .toast.error {
+            border-left: 3px solid #ef4444;
+        }
+
+        .toast.info {
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Enhancement prompt helper */
+        .enhance-btn {
+            padding: 6px 12px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .enhance-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        /* API Provider Selector */
+        .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 8px;
+        }
+
+        .provider-card {
+            padding: 10px 14px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .provider-card:hover {
+            border-color: var(--border-hover);
+        }
+
+        .provider-card.active {
+            border-color: var(--accent-primary);
+            background: rgba(124, 58, 237, 0.1);
+        }
+
+        .provider-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .provider-info {
+            flex: 1;
+        }
+
+        .provider-name {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .provider-desc {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Collapsible sections */
+        .collapsible-header {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .collapsible-header .chevron {
+            transition: transform 0.3s;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .collapsible-header.collapsed .chevron {
+            transform: rotate(-90deg);
+        }
+
+        .collapsible-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .collapsible-content.collapsed {
+            max-height: 0 !important;
+            overflow: hidden;
+        }
+
+        /* Image-to-Video upload */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent-primary);
+            background: rgba(124, 58, 237, 0.05);
+        }
+
+        .upload-zone.has-file {
+            border-style: solid;
+            border-color: var(--accent-green);
+        }
+
+        .upload-zone input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 24px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .upload-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .upload-hint {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .upload-preview {
+            width: 100%;
+            max-height: 120px;
+            object-fit: contain;
+            border-radius: 8px;
+            display: none;
+        }
+
+        /* Camera Motion */
+        .motion-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .motion-btn {
+            padding: 8px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .motion-btn:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+        }
+
+        .motion-btn.active {
+            border-color: var(--accent-primary);
+            color: var(--accent-secondary);
+            background: rgba(124, 58, 237, 0.1);
+        }
+
+        .motion-label {
+            display: block;
+            font-size: 9px;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .right-panel {
+                display: none;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 100%;
+                min-width: unset;
+                height: auto;
+                max-height: none;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .main-content {
+                flex-direction: column;
+            }
+
+            .preview-area {
+                height: 50vh;
+            }
+
+            .header {
+                padding: 12px 16px;
+            }
+
+            .sidebar-section {
+                padding: 16px;
+            }
+        }
+
+        /* Enhanced Prompt display */
+        .enhanced-prompt-display {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
+            font-size: 11px;
+            color: var(--accent-blue);
+            line-height: 1.5;
+            display: none;
+        }
+
+        .enhanced-prompt-display.active {
+            display: block;
+        }
+
+        /* Keyframe timeline */
+        .keyframe-timeline {
+            height: 60px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        .kf-track {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .kf-marker {
+            width: 12px;
+            height: 12px;
+            background: var(--accent-primary);
+            border: 2px solid white;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .kf-line {
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-pink));
+            flex: 1;
+        }
+
+        /* Image gallery for generated frames */
+        .frame-gallery {
+            display: flex;
+            gap: 8px;
+            padding: 10px 0;
+            overflow-x: auto;
+        }
+
+        .frame-thumb {
+            width: 80px;
+            height: 45px;
+            border-radius: 6px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .frame-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .frame-thumb.active {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background -->
+    <div class="bg-animation">
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+    </div>
+    <div class="grid-overlay"></div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- API Settings Modal -->
+    <div class="modal-overlay" id="apiModal">
+        <div class="modal">
+            <h2><i class="fas fa-key"></i> API Configuration</h2>
+            <p>Configure your AI API keys to enable video generation. You can use free tiers from multiple providers.</p>
+
+            <div class="modal-input-group">
+                <label>Hugging Face API Token (Free)</label>
+                <input type="password" class="modal-input" id="hfApiKey" placeholder="hf_xxxxxxxxxxxxxxxxxxxx">
+            </div>
+
+            <div class="modal-input-group">
+                <label>Stability AI API Key</label>
+                <input type="password" class="modal-input" id="stabilityApiKey" placeholder="sk-xxxxxxxxxxxxxxxxxxxx">
+            </div>
+
+            <div class="modal-input-group">
+                <label>Replicate API Token</label>
+                <input type="password" class="modal-input" id="replicateApiKey" placeholder="r8_xxxxxxxxxxxxxxxxxxxx">
+            </div>
+
+            <div class="modal-input-group">
+                <label>Pollinations (No key needed ✓)</label>
+                <input type="text" class="modal-input" value="Free - No API key required" disabled style="opacity:0.5">
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn" onclick="closeModal('apiModal')">Cancel</button>
+                <button class="modal-btn primary" onclick="saveApiKeys()">
+                    <i class="fas fa-save"></i> Save Keys
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-film"></i></div>
+                <span class="logo-text">AI Video Studio</span>
+                <span class="logo-badge">Beta</span>
+            </div>
+            <div class="header-actions">
+                <div class="api-status">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Ready</span>
+                </div>
+                <button class="header-btn" onclick="openModal('apiModal')">
+                    <i class="fas fa-key"></i> API Keys
+                </button>
+                <button class="header-btn" onclick="exportProject()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Sidebar -->
+            <aside class="sidebar">
+                <!-- Prompt Section -->
+                <div class="sidebar-section">
+                    <div class="section-title">
+                        <i class="fas fa-pen-fancy"></i> Video Prompt
+                        <button class="enhance-btn" onclick="enhancePrompt()" title="AI-enhance your prompt">
+                            <i class="fas fa-magic"></i> Enhance
+                        </button>
+                    </div>
+                    <div class="prompt-container">
+                        <textarea class="prompt-textarea" id="promptInput"
+                            placeholder="Describe your video in detail...&#10;&#10;Example: A majestic golden eagle soaring through misty mountain valleys at sunrise, cinematic 4K, dramatic lighting, slow motion, aerial view"></textarea>
+                        <div class="char-count"><span id="charCount">0</span> / 2000</div>
+                    </div>
+                    <div class="prompt-actions">
+                        <button class="prompt-chip" onclick="insertPrompt('cinematic, 4K quality')">🎬 Cinematic</button>
+                        <button class="prompt-chip" onclick="insertPrompt('slow motion, 120fps')">🐌 Slow-mo</button>
+                        <button class="prompt-chip" onclick="insertPrompt('aerial drone shot')">🚁 Aerial</button>
+                        <button class="prompt-chip" onclick="insertPrompt('golden hour lighting')">🌅 Golden Hour</button>
+                        <button class="prompt-chip" onclick="insertPrompt('bokeh, shallow depth of field')">📷 Bokeh</button>
+                        <button class="prompt-chip" onclick="insertPrompt('hyper realistic, photorealistic')">✨ Realistic</button>
+                    </div>
+                    <div class="enhanced-prompt-display" id="enhancedPrompt"></div>
+                </div>
+
+                <!-- Negative Prompt -->
+                <div class="sidebar-section">
+                    <div class="section-title collapsible-header" onclick="toggleSection(this)">
+                        <span><i class="fas fa-ban"></i> Negative Prompt</span>
+                        <i class="fas fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="collapsible-content">
+                        <textarea class="negative-prompt" id="negativePrompt"
+                            placeholder="What to avoid: blur, distortion, low quality...">blurry, low quality, distorted, deformed, ugly, watermark, text, logo, bad anatomy</textarea>
+                    </div>
+                </div>
+
+                <!-- AI Provider -->
+                <div class="sidebar-section">
+                    <div class="section-title">
+                        <i class="fas fa-robot"></i> AI Provider
+                    </div>
+                    <div class="provider-grid">
+                        <div class="provider-card active" onclick="selectProvider(this, 'pollinations')" data-provider="pollinations">
+                            <div class="provider-icon" style="background: linear-gradient(135deg, #10b981, #06b6d4);">🌸</div>
+                            <div class="provider-info">
+                                <div class="provider-name">Pollinations AI</div>
+                                <div class="provider-desc">Free, no API key needed</div>
+                            </div>
+                        </div>
+                        <div class="provider-card" onclick="selectProvider(this, 'huggingface')" data-provider="huggingface">
+                            <div class="provider-icon" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">🤗</div>
+                            <div class="provider-info">
+                                <div class="provider-name">Hugging Face</div>
+                                <div class="provider-desc">Free tier available</div>
+                            </div>
+                        </div>
+                        <div class="provider-card" onclick="selectProvider(this, 'stability')" data-provider="stability">
+                            <div class="provider-icon" style="background: linear-gradient(135deg, #7c3aed, #a855f7);">🎯</div>
+                            <div class="provider-info">
+                                <div class="provider-name">Stability AI</div>
+                                <div class="provider-desc">Stable Video Diffusion</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reference Image -->
+                <div class="sidebar-section">
+                    <div class="section-title collapsible-header" onclick="toggleSection(this)">
+                        <span><i class="fas fa-image"></i> Reference Image (Optional)</span>
+                        <i class="fas fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="upload-zone" id="uploadZone">
+                            <input type="file" accept="image/*" id="imageUpload" onchange="handleImageUpload(event)">
+                            <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <div class="upload-text">Drop image or click to upload</div>
+                            <div class="upload-hint">PNG, JPG up to 10MB - Image-to-Video mode</div>
+                            <img class="upload-preview" id="uploadPreview">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Settings -->
+                <div class="sidebar-section">
+                    <div class="section-title">
+                        <i class="fas fa-sliders-h"></i> Video Settings
+                    </div>
+
+                    <!-- Aspect Ratio -->
+                    <div class="control-group">
+                        <div class="control-label">Aspect Ratio</div>
+                        <div class="option-grid three-col">
+                            <button class="option-btn active" onclick="setAspect(this, '16:9')" data-ratio="16:9">
+                                <span class="opt-icon">🖥️</span>16:9
+                            </button>
+                            <button class="option-btn" onclick="setAspect(this, '9:16')" data-ratio="9:16">
+                                <span class="opt-icon">📱</span>9:16
+                            </button>
+                            <button class="option-btn" onclick="setAspect(this, '1:1')" data-ratio="1:1">
+                                <span class="opt-icon">⬜</span>1:1
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Duration -->
+                    <div class="control-group">
+                        <div class="control-label">
+                            Duration
+                            <span class="control-value" id="durationValue">4s</span>
+                        </div>
+                        <input type="range" class="range-slider" id="durationSlider"
+                            min="2" max="16" value="4" step="1"
+                            oninput="updateSliderValue('durationValue', this.value + 's')">
+                    </div>
+
+                    <!-- Quality -->
+                    <div class="control-group">
+                        <div class="control-label">Resolution</div>
+                        <select class="control-select" id="resolutionSelect">
+                            <option value="512x512">512 × 512 (Fast)</option>
+                            <option value="768x768">768 × 768 (Balanced)</option>
+                            <option value="1024x576" selected>1024 × 576 (HD 16:9)</option>
+                            <option value="576x1024">576 × 1024 (HD 9:16)</option>
+                            <option value="1024x1024">1024 × 1024 (HD Square)</option>
+                            <option value="1280x720">1280 × 720 (720p)</option>
+                        </select>
+                    </div>
+
+                    <!-- FPS -->
+                    <div class="control-group">
+                        <div class="control-label">
+                            Frame Rate
+                            <span class="control-value" id="fpsValue">24 fps</span>
+                        </div>
+                        <input type="range" class="range-slider" id="fpsSlider"
+                            min="8" max="60" value="24" step="1"
+                            oninput="updateSliderValue('fpsValue', this.value + ' fps')">
+                    </div>
+
+                    <!-- Guidance Scale -->
+                    <div class="control-group">
+                        <div class="control-label">
+                            Guidance Scale
+                            <span class="control-value" id="guidanceValue">7.5</span>
+                        </div>
+                        <input type="range" class="range-slider" id="guidanceSlider"
+                            min="1" max="20" value="7.5" step="0.5"
+                            oninput="updateSliderValue('guidanceValue', this.value)">
+                    </div>
+
+                    <!-- Steps -->
+                    <div class="control-group">
+                        <div class="control-label">
+                            Inference Steps
+                            <span class="control-value" id="stepsValue">30</span>
+                        </div>
+                        <input type="range" class="range-slider" id="stepsSlider"
+                            min="10" max="100" value="30" step="5"
+                            oninput="updateSliderValue('stepsValue', this.value)">
+                    </div>
+
+                    <!-- Seed -->
+                    <div class="control-group">
+                        <div class="control-label">
+                            Seed
+                            <span class="control-value" id="seedValue">Random</span>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <input type="number" class="modal-input" id="seedInput" placeholder="Random"
+                                style="flex:1" oninput="document.getElementById('seedValue').textContent = this.value || 'Random'">
+                            <button class="prompt-chip" onclick="document.getElementById('seedInput').value = Math.floor(Math.random()*999999); document.getElementById('seedValue').textContent = document.getElementById('seedInput').value;" style="white-space:nowrap">🎲 Random</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Camera Motion -->
+                <div class="sidebar-section">
+                    <div class="section-title collapsible-header" onclick="toggleSection(this)">
+                        <span><i class="fas fa-video"></i> Camera Motion</span>
+                        <i class="fas fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="motion-selector">
+                            <button class="motion-btn active" onclick="setMotion(this, 'none')">
+                                ⊙<span class="motion-label">Static</span>
+                            </button>
+                            <button class="motion-btn" onclick="setMotion(this, 'pan-left')">
+                                ←<span class="motion-label">Pan L</span>
+                            </button>
+                            <button class="motion-btn" onclick="setMotion(this, 'pan-right')">
+                                →<span class="motion-label">Pan R</span>
+                            </button>
+                            <button class="motion-btn" onclick="setMotion(this, 'tilt-up')">
+                                ↑<span class="motion-label">Tilt Up</span>
+                            </button>
+                            <button class="motion-btn" onclick="setMotion(this, 'tilt-down')">
+                                ↓<span class="motion-label">Tilt Down</span>
+                            </button>
+                            <button class="motion-btn" onclick="setMotion(this, 'zoom-in')">
+                                ⊕<span class="motion-label">Zoom In</span>
+                            </button>
+                            <button class="motion-btn" onclick="setMotion(this, 'zoom-out')">
+                                ⊖<span class="motion-label">Zoom Out</span>
+                            </button>
+                            <button class="motion-btn" onclick="setMotion(this, 'orbit')">
+                                ↻<span class="motion-label">Orbit</span>
+                            </button>
+                            <button class="motion-btn" onclick="setMotion(this, 'dolly')">
+                                ⇡<span class="motion-label">Dolly</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Style Presets -->
+                <div class="sidebar-section">
+                    <div class="section-title collapsible-header" onclick="toggleSection(this)">
+                        <span><i class="fas fa-palette"></i> Style Presets</span>
+                        <i class="fas fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="style-grid">
+                            <div class="style-card active" onclick="setStyle(this, 'realistic')">
+                                <div class="style-icon">📸</div>
+                                <div class="style-name">Realistic</div>
+                                <div class="style-desc">Photorealistic</div>
+                            </div>
+                            <div class="style-card" onclick="setStyle(this, 'cinematic')">
+                                <div class="style-icon">🎬</div>
+                                <div class="style-name">Cinematic</div>
+                                <div class="style-desc">Film look</div>
+                            </div>
+                            <div class="style-card" onclick="setStyle(this, 'anime')">
+                                <div class="style-icon">🎨</div>
+                                <div class="style-name">Anime</div>
+                                <div class="style-desc">Japanese style</div>
+                            </div>
+                            <div class="style-card" onclick="setStyle(this, '3d-render')">
+                                <div class="style-icon">🧊</div>
+                                <div class="style-name">3D Render</div>
+                                <div class="style-desc">CGI quality</div>
+                            </div>
+                            <div class="style-card" onclick="setStyle(this, 'watercolor')">
+                                <div class="style-icon">🖌️</div>
+                                <div class="style-name">Watercolor</div>
+                                <div class="style-desc">Artistic paint</div>
+                            </div>
+                            <div class="style-card" onclick="setStyle(this, 'noir')">
+                                <div class="style-icon">🖤</div>
+                                <div class="style-name">Film Noir</div>
+                                <div class="style-desc">B&W dramatic</div>
+                            </div>
+                            <div class="style-card" onclick="setStyle(this, 'scifi')">
+                                <div class="style-icon">🚀</div>
+                                <div class="style-name">Sci-Fi</div>
+                                <div class="style-desc">Futuristic</div>
+                            </div>
+                            <div class="style-card" onclick="setStyle(this, 'fantasy')">
+                                <div class="style-icon">🧙</div>
+                                <div class="style-name">Fantasy</div>
+                                <div class="style-desc">Magical world</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generate Button -->
+                <div class="generate-section">
+                    <button class="generate-btn" id="generateBtn" onclick="generateVideo()">
+                        <i class="fas fa-play"></i>
+                        Generate Video
+                    </button>
+                    <div class="credits-info">
+                        <i class="fas fa-info-circle"></i> Using free AI providers - Results may vary
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Preview Area -->
+            <main class="preview-area">
+                <div class="preview-toolbar">
+                    <div class="preview-tabs">
+                        <button class="preview-tab active" onclick="switchTab(this, 'preview')">Preview</button>
+                        <button class="preview-tab" onclick="switchTab(this, 'frames')">Frames</button>
+                        <button class="preview-tab" onclick="switchTab(this, 'storyboard')">Storyboard</button>
+                    </div>
+                    <div class="preview-tools">
+                        <button class="tool-btn" onclick="toggleFullscreen()" title="Fullscreen">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button class="tool-btn" onclick="downloadResult()" title="Download" id="downloadBtn" style="display:none">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="tool-btn" onclick="shareResult()" title="Share" id="shareBtn" style="display:none">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="preview-canvas">
+                    <div class="canvas-frame" id="canvasFrame">
+                        <!-- Placeholder -->
+                        <div class="canvas-placeholder" id="placeholder">
+                            <div class="icon"><i class="fas fa-film"></i></div>
+                            <h3>AI Video Studio</h3>
+                            <p>Enter a detailed prompt and click Generate to create your AI-powered video. The more descriptive your prompt, the better the result.</p>
+                        </div>
+
+                        <!-- Generation Overlay -->
+                        <div class="generation-overlay" id="genOverlay">
+                            <div class="gen-spinner"></div>
+                            <div class="gen-status" id="genStatus">Initializing...</div>
+                            <div class="gen-substatus" id="genSubstatus">Connecting to AI provider</div>
+                            <div class="gen-progress-bar">
+                                <div class="gen-progress-fill" id="genProgress"></div>
+                            </div>
+                            <div class="gen-steps" id="genSteps">
+                                <div class="gen-step active" id="step1">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <span>Analyzing prompt...</span>
+                                </div>
+                                <div class="gen-step" id="step2">
+                                    <i class="fas fa-circle"></i>
+                                    <span>Generating frames...</span>
+                                </div>
+                                <div class="gen-step" id="step3">
+                                    <i class="fas fa-circle"></i>
+                                    <span>Applying motion...</span>
+                                </div>
+                                <div class="gen-step" id="step4">
+                                    <i class="fas fa-circle"></i>
+                                    <span>Compositing video...</span>
+                                </div>
+                                <div class="gen-step" id="step5">
+                                    <i class="fas fa-circle"></i>
+                                    <span>Final processing...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Result displays -->
+                        <video class="video-result" id="videoResult" loop></video>
+                        <img class="result-image" id="imageResult">
+
+                        <!-- Video Controls -->
+                        <div class="video-controls" id="videoControls">
+                            <button class="v-ctrl-btn" onclick="togglePlayPause()">
+                                <i class="fas fa-play" id="playIcon"></i>
+                            </button>
+                            <div class="v-timeline" onclick="seekVideo(event)">
+                                <div class="v-timeline-fill" id="timelineFill"></div>
+                            </div>
+                            <span class="v-time" id="videoTime">0:00 / 0:00</span>
+                            <button class="v-ctrl-btn" onclick="toggleMute()">
+                                <i class="fas fa-volume-up" id="muteIcon"></i>
+                            </button>
+                            <button class="v-ctrl-btn" onclick="toggleFullscreen()">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Frame gallery -->
+                <div class="frame-gallery" id="frameGallery" style="padding: 0 30px; display:none;"></div>
+            </main>
+
+            <!-- Right Panel - History -->
+            <aside class="right-panel">
+                <div class="sidebar-section">
+                    <div class="section-title">
+                        <i class="fas fa-history"></i> Generation History
+                    </div>
+                </div>
+                <div id="historyList">
+                    <div style="padding: 30px; text-align: center;">
+                        <div style="font-size: 36px; opacity: 0.2; margin-bottom: 10px;">📭</div>
+                        <p style="font-size: 12px; color: var(--text-muted);">No generations yet.<br>Create your first video!</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+        // =====================================================
+        // AI VIDEO STUDIO - Main Application Logic
+        // =====================================================
+
+        // State
+        const state = {
+            provider: 'pollinations',
+            style: 'realistic',
+            aspect: '16:9',
+            motion: 'none',
+            referenceImage: null,
+            referenceImageBase64: null,
+            isGenerating: false,
+            history: [],
+            apiKeys: {
+                huggingface: '',
+                stability: '',
+                replicate: ''
+            }
+        };
+
+        // Style modifiers for prompts
+        const styleModifiers = {
+            'realistic': 'photorealistic, ultra detailed, 8k resolution, natural lighting, realistic textures',
+            'cinematic': 'cinematic lighting, film grain, anamorphic lens, dramatic shadows, color graded, movie quality',
+            'anime': 'anime style, cel shaded, vibrant colors, Studio Ghibli inspired, Japanese animation',
+            '3d-render': '3D rendered, Unreal Engine 5, ray tracing, subsurface scattering, CGI quality, octane render',
+            'watercolor': 'watercolor painting, artistic, soft brush strokes, flowing colors, paper texture',
+            'noir': 'film noir, black and white, high contrast, dramatic shadows, moody atmosphere, 1940s',
+            'scifi': 'sci-fi, futuristic, neon lights, cyberpunk, holographic, advanced technology',
+            'fantasy': 'fantasy art, magical, ethereal glow, mythical, enchanted, epic fantasy landscape'
+        };
+
+        const motionModifiers = {
+            'none': '',
+            'pan-left': ', camera panning left smoothly',
+            'pan-right': ', camera panning right smoothly',
+            'tilt-up': ', camera tilting upward slowly',
+            'tilt-down': ', camera tilting downward slowly',
+            'zoom-in': ', camera slowly zooming in',
+            'zoom-out': ', camera slowly zooming out',
+            'orbit': ', camera orbiting around the subject',
+            'dolly': ', camera dolly shot moving forward'
+        };
+
+        // =====================================================
+        // INITIALIZATION
+        // =====================================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load saved API keys
+            const savedKeys = localStorage.getItem('aiVideoStudio_apiKeys');
+            if (savedKeys) {
+                state.apiKeys = JSON.parse(savedKeys);
+                document.getElementById('hfApiKey').value = state.apiKeys.huggingface || '';
+                document.getElementById('stabilityApiKey').value = state.apiKeys.stability || '';
+                document.getElementById('replicateApiKey').value = state.apiKeys.replicate || '';
+            }
+
+            // Load history
+            const savedHistory = localStorage.getItem('aiVideoStudio_history');
+            if (savedHistory) {
+                state.history = JSON.parse(savedHistory);
+                renderHistory();
+            }
+
+            // Char counter
+            document.getElementById('promptInput').addEventListener('input', function() {
+                document.getElementById('charCount').textContent = this.value.length;
+            });
+
+            updateStatus('ready');
+        });
+
+        // =====================================================
+        // UI FUNCTIONS
+        // =====================================================
+
+        function updateSliderValue(id, value) {
+            document.getElementById(id).textContent = value;
+        }
+
+        function toggleSection(header) {
+            header.classList.toggle('collapsed');
+            const content = header.nextElementSibling;
+            content.classList.toggle('collapsed');
+        }
+
+        function insertPrompt(text) {
+            const input = document.getElementById('promptInput');
+            const current = input.value.trim();
+            input.value = current ? `${current}, ${text}` : text;
+            document.getElementById('charCount').textContent = input.value.length;
+        }
+
+        function setAspect(btn, ratio) {
+            document.querySelectorAll('[data-ratio]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            state.aspect = ratio;
+
+            const frame = document.getElementById('canvasFrame');
+            frame.classList.remove('ratio-9-16', 'ratio-1-1');
+            if (ratio === '9:16') frame.classList.add('ratio-9-16');
+            if (ratio === '1:1') frame.classList.add('ratio-1-1');
+        }
+
+        function setMotion(btn, motion) {
+            document.querySelectorAll('.motion-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            state.motion = motion;
+        }
+
+        function setStyle(card, style) {
+            document.querySelectorAll('.style-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            state.style = style;
+        }
+
+        function selectProvider(card, provider) {
+            document.querySelectorAll('.provider-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            state.provider = provider;
+            showToast(`Switched to ${card.querySelector('.provider-name').textContent}`, 'info');
+        }
+
+        function switchTab(tab, view) {
+            document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function saveApiKeys() {
+            state.apiKeys.huggingface = document.getElementById('hfApiKey').value.trim();
+            state.apiKeys.stability = document.getElementById('stabilityApiKey').value.trim();
+            state.apiKeys.replicate = document.getElementById('replicateApiKey').value.trim();
+            localStorage.setItem('aiVideoStudio_apiKeys', JSON.stringify(state.apiKeys));
+            closeModal('apiModal');
+            showToast('API keys saved successfully!', 'success');
+        }
+
+        function updateStatus(status) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            dot.className = 'status-dot';
+
+            switch(status) {
+                case 'ready':
+                    text.textContent = 'Ready';
+                    break;
+                case 'generating':
+                    dot.classList.add('connecting');
+                    text.textContent = 'Generating...';
+                    break;
+                case 'error':
+                    dot.classList.add('offline');
+                    text.textContent = 'Error';
+                    break;
+                case 'done':
+                    text.textContent = 'Complete';
+                    break;
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: 'check-circle', error: 'exclamation-circle', info: 'info-circle' };
+            toast.innerHTML = `<i class="fas fa-${icons[type]}"></i> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                state.referenceImage = file;
+                state.referenceImageBase64 = e.target.result;
+                const preview = document.getElementById('uploadPreview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                document.getElementById('uploadZone').classList.add('has-file');
+                document.querySelector('#uploadZone .upload-icon').style.display = 'none';
+                document.querySelector('#uploadZone .upload-text').style.display = 'none';
+                document.querySelector('#uploadZone .upload-hint').style.display = 'none';
+                showToast('Reference image loaded!', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // =====================================================
+        // PROMPT ENHANCEMENT (Uses free AI)
+        // =====================================================
+
+        async function enhancePrompt() {
+            const input = document.getElementById('promptInput');
+            const prompt = input.value.trim();
+            if (!prompt) {
+                showToast('Please enter a prompt first', 'error');
+                return;
+            }
+
+            const enhanceDisplay = document.getElementById('enhancedPrompt');
+            enhanceDisplay.textContent = 'Enhancing prompt with AI...';
+            enhanceDisplay.classList.add('active');
+
+            try {
+                // Use Pollinations text API (free, no key needed)
+                const systemPrompt = `You are an expert video prompt engineer. Enhance the following video generation prompt to make it more detailed and descriptive for AI video generation. Add specific details about lighting, camera angles, motion, atmosphere, textures, and cinematic qualities. Keep it under 300 words. Return ONLY the enhanced prompt, nothing else.`;
+
+                const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(systemPrompt + '\n\nOriginal prompt: ' + prompt)}`, {
+                    method: 'GET'
+                });
+
+                if (response.ok) {
+                    const enhanced = await response.text();
+                    input.value = enhanced.trim();
+                    document.getElementById('charCount').textContent = input.value.length;
+                    enhanceDisplay.textContent = '✨ Prompt enhanced successfully!';
+                    setTimeout(() => enhanceDisplay.classList.remove('active'), 3000);
+                    showToast('Prompt enhanced!', 'success');
+                } else {
+                    throw new Error('Enhancement failed');
+                }
+            } catch (error) {
+                // Fallback: local enhancement
+                const enhanced = localEnhancePrompt(prompt);
+                input.value = enhanced;
+                document.getElementById('charCount').textContent = input.value.length;
+                enhanceDisplay.textContent = '✨ Prompt enhanced (local)';
+                setTimeout(() => enhanceDisplay.classList.remove('active'), 3000);
+                showToast('Prompt enhanced locally', 'info');
+            }
+        }
+
+        function localEnhancePrompt(prompt) {
+            const additions = [
+                'ultra detailed, 8K resolution',
+                'professional cinematography',
+                'volumetric lighting, ray tracing',
+                'natural motion blur',
+                'film grain, color graded',
+                'shallow depth of field',
+                'atmospheric perspective',
+                'photorealistic textures'
+            ];
+            const randomAdditions = additions.sort(() => 0.5 - Math.random()).slice(0, 4);
+            return `${prompt}, ${randomAdditions.join(', ')}`;
+        }
+
+        // =====================================================
+        // VIDEO/IMAGE GENERATION
+        // =====================================================
+
+        function buildFullPrompt() {
+            let prompt = document.getElementById('promptInput').value.trim();
+            const styleModifier = styleModifiers[state.style] || '';
+            const motionModifier = motionModifiers[state.motion] || '';
+
+            return `${prompt}, ${styleModifier}${motionModifier}`;
+        }
+
+        function getResolution() {
+            const sel = document.getElementById('resolutionSelect').value;
+            const [w, h] = sel.split('x').map(Number);
+            return { width: w, height: h };
+        }
+
+        async function generateVideo() {
+            const prompt = document.getElementById('promptInput').value.trim();
+            if (!prompt) {
+                showToast('Please enter a prompt!', 'error');
+                return;
+            }
+
+            if (state.isGenerating) return;
+            state.isGenerating = true;
+
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+            updateStatus('generating');
+            showGenOverlay();
+
+            try {
+                switch (state.provider) {
+                    case 'pollinations':
+                        await generateWithPollinations();
+                        break;
+                    case 'huggingface':
+                        await generateWithHuggingFace();
+                        break;
+                    case 'stability':
+                        await generateWithStability();
+                        break;
+                    default:
+                        await generateWithPollinations();
+                }
+            } catch (error) {
+                console.error('Generation error:', error);
+                showToast(`Generation failed: ${error.message}`, 'error');
+                updateStatus('error');
+                hideGenOverlay();
+            }
+
+            state.isGenerating = false;
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-play"></i> Generate Video';
+        }
+
+        // ---------------------
+        // POLLINATIONS AI (Free, no key)
+        // ---------------------
+        async function generateWithPollinations() {
+            const fullPrompt = buildFullPrompt();
+            const res = getResolution();
+            const seed = document.getElementById('seedInput').value || Math.floor(Math.random() * 999999);
+            const duration = parseInt(document.getElementById('durationSlider').value);
+            const fps = parseInt(document.getElementById('fpsSlider').value);
+
+            // Step 1: Generate key frames
+            updateGenStep(1, 'active');
+            updateGenStatus('Analyzing prompt...', 'Building scene description');
+            updateGenProgress(10);
+            await sleep(800);
+
+            updateGenStep(1, 'done');
+            updateGenStep(2, 'active');
+            updateGenStatus('Generating frames...', 'Creating visual elements with AI');
+            updateGenProgress(25);
+
+            const totalFrames = Math.min(duration * 2, 8); // Generate key frames
+            const frames = [];
+
+            for (let i = 0; i < totalFrames; i++) {
+                const frameSeed = parseInt(seed) + i * 10;
+                const framePrompt = `${fullPrompt}, frame ${i+1} of ${totalFrames} of a smooth video sequence`;
+
+                const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(framePrompt)}?width=${res.width}&height=${res.height}&seed=${frameSeed}&nologo=true&model=flux`;
+
+                try {
+                    // Pre-fetch to ensure it's generated
+                    const response = await fetch(imageUrl);
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = URL.createObjectURL(blob);
+                        frames.push(url);
+                    }
+                } catch (e) {
+                    console.warn(`Frame ${i} failed, retrying...`);
+                    // Use alternate seed
+                    const altUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=${res.width}&height=${res.height}&seed=${frameSeed + 1}&nologo=true`;
+                    try {
+                        const resp = await fetch(altUrl);
+                        if (resp.ok) {
+                            const blob = await resp.blob();
+                            frames.push(URL.createObjectURL(blob));
+                        }
+                    } catch (e2) {
+                        console.warn(`Frame ${i} skip`);
+                    }
+                }
+
+                updateGenProgress(25 + (i / totalFrames) * 40);
+                updateGenStatus('Generating frames...', `Frame ${i + 1} / ${totalFrames}`);
+            }
+
+            if (frames.length === 0) {
+                throw new Error('Failed to generate any frames');
+            }
+
+            updateGenStep(2, 'done');
+            updateGenStep(3, 'active');
+            updateGenStatus('Applying motion...', 'Interpolating between frames');
+            updateGenProgress(70);
+            await sleep(500);
+
+            updateGenStep(3, 'done');
+            updateGenStep(4, 'active');
+            updateGenStatus('Compositing video...', 'Creating smooth animation');
+            updateGenProgress(85);
+
+            // Create animated video from frames using Canvas
+            const videoBlob = await createVideoFromFrames(frames, fps, duration);
+
+            updateGenStep(4, 'done');
+            updateGenStep(5, 'active');
+            updateGenStatus('Final processing...', 'Encoding output');
+            updateGenProgress(95);
+            await sleep(300);
+
+            updateGenStep(5, 'done');
+            updateGenProgress(100);
+            updateGenStatus('Complete!', 'Your video is ready');
+            await sleep(500);
+
+            // Display result
+            if (videoBlob) {
+                displayVideoResult(videoBlob, frames);
+            } else {
+                displayImageResult(frames[0], frames);
+            }
+
+            // Save to history
+            addToHistory(prompt, frames[0], duration);
+
+            updateStatus('done');
+            hideGenOverlay();
+            showToast('Video generated successfully!', 'success');
+        }
+
+        // ---------------------
+        // HUGGING FACE (Free tier)
+        // ---------------------
+        async function generateWithHuggingFace() {
+            if (!state.apiKeys.huggingface) {
+                showToast('Please set your Hugging Face API key', 'error');
+                openModal('apiModal');
+                hideGenOverlay();
+                return;
+            }
+
+            const fullPrompt = buildFullPrompt();
+            const negPrompt = document.getElementById('negativePrompt').value;
+            const res = getResolution();
+
+            updateGenStep(1, 'active');
+            updateGenStatus('Connecting to Hugging Face...', 'Loading model');
+            updateGenProgress(10);
+
+            // Try text-to-image models on HF
+            const models = [
+                'stabilityai/stable-diffusion-xl-base-1.0',
+                'runwayml/stable-diffusion-v1-5',
+                'CompVis/stable-diffusion-v1-4'
+            ];
+
+            let generatedFrames = [];
+            const duration = parseInt(document.getElementById('durationSlider').value);
+            const fps = parseInt(document.getElementById('fpsSlider').value);
+            const numFrames = Math.min(duration * 2, 8);
+
+            for (let modelIdx = 0; modelIdx < models.length; modelIdx++) {
+                const model = models[modelIdx];
+                updateGenStatus('Generating with HF...', `Trying ${model.split('/')[1]}`);
+
+                try {
+                    for (let i = 0; i < numFrames; i++) {
+                        updateGenStep(2, 'active');
+                        updateGenProgress(20 + (i / numFrames) * 50);
+                        updateGenStatus('Generating frames...', `Frame ${i + 1} / ${numFrames}`);
+
+                        const seed = parseInt(document.getElementById('seedInput').value || Math.floor(Math.random() * 999999)) + i * 10;
+
+                        const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${state.apiKeys.huggingface}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                inputs: `${fullPrompt}, frame ${i+1} of ${numFrames} video sequence`,
+                                parameters: {
+                                    negative_prompt: negPrompt,
+                                    guidance_scale: parseFloat(document.getElementById('guidanceSlider').value),
+                                    num_inference_steps: parseInt(document.getElementById('stepsSlider').value),
+                                    seed: seed,
+                                    width: Math.min(res.width, 1024),
+                                    height: Math.min(res.height, 1024)
+                                }
+                            })
+                        });
+
+                        if (response.ok) {
+                            const blob = await response.blob();
+                            generatedFrames.push(URL.createObjectURL(blob));
+                        } else {
+                            const err = await response.json().catch(() => ({}));
+                            if (err.error && err.error.includes('loading')) {
+                                showToast('Model is loading, please wait...', 'info');
+                                await sleep(10000);
+                                i--; // Retry
+                                continue;
+                            }
+                            throw new Error(err.error || 'HF API error');
+                        }
+                    }
+                    break; // Success
+                } catch (e) {
+                    console.warn(`Model ${model} failed:`, e.message);
+                    if (modelIdx === models.length - 1) {
+                        throw new Error('All HF models failed: ' + e.message);
+                    }
+                }
+            }
+
+            updateGenStep(2, 'done');
+            updateGenStep(3, 'active');
+            updateGenStatus('Creating animation...', 'Interpolating frames');
+            updateGenProgress(80);
+
+            const videoBlob = await createVideoFromFrames(generatedFrames, fps, duration);
+
+            updateGenStep(3, 'done');
+            updateGenStep(4, 'done');
+            updateGenStep(5, 'done');
+            updateGenProgress(100);
+
+            if (videoBlob) {
+                displayVideoResult(videoBlob, generatedFrames);
+            } else if (generatedFrames.length > 0) {
+                displayImageResult(generatedFrames[0], generatedFrames);
+            }
+
+            addToHistory(document.getElementById('promptInput').value, generatedFrames[0], duration);
+            updateStatus('done');
+            hideGenOverlay();
+            showToast('Generated with Hugging Face!', 'success');
+        }
+
+        // ---------------------
+        // STABILITY AI
+        // ---------------------
+        async function generateWithStability() {
+            if (!state.apiKeys.stability) {
+                // Fallback to Pollinations
+                showToast('No Stability API key. Using Pollinations instead.', 'info');
+                state.provider = 'pollinations';
+                await generateWithPollinations();
+                return;
+            }
+
+            const fullPrompt = buildFullPrompt();
+            const negPrompt = document.getElementById('negativePrompt').value;
+
+            updateGenStep(1, 'active');
+            updateGenStatus('Connecting to Stability AI...', 'Initializing Stable Diffusion');
+            updateGenProgress(10);
+
+            try {
+                const response = await fetch('https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${state.apiKeys.stability}`,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text_prompts: [
+                            { text: fullPrompt, weight: 1 },
+                            { text: negPrompt, weight: -1 }
+                        ],
+                        cfg_scale: parseFloat(document.getElementById('guidanceSlider').value),
+                        steps: parseInt(document.getElementById('stepsSlider').value),
+                        samples: 1,
+                        width: 1024,
+                        height: 576
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Stability API error');
+                }
+
+                const data = await response.json();
+                const imageData = data.artifacts[0].base64;
+                const imageUrl = `data:image/png;base64,${imageData}`;
+
+                updateGenProgress(100);
+                displayImageResult(imageUrl, [imageUrl]);
+                addToHistory(document.getElementById('promptInput').value, imageUrl, 0);
+                updateStatus('done');
+                hideGenOverlay();
+                showToast('Generated with Stability AI!', 'success');
+            } catch (error) {
+                throw new Error('Stability AI: ' + error.message);
+            }
+        }
+
+        // =====================================================
+        // VIDEO CREATION FROM FRAMES
+        // =====================================================
+
+        async function createVideoFromFrames(frameUrls, fps, duration) {
+            if (frameUrls.length === 0) return null;
+
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const res = getResolution();
+                canvas.width = res.width;
+                canvas.height = res.height;
+
+                // Load all frame images
+                const images = await Promise.all(frameUrls.map(url => {
+                    return new Promise((resolve, reject) => {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.onload = () => resolve(img);
+                        img.onerror = () => reject(new Error('Failed to load frame'));
+                        img.src = url;
+                    });
+                }));
+
+                if (images.length === 0) return null;
+
+                // Check for MediaRecorder support
+                const stream = canvas.captureStream(fps);
+                const mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: getSupportedMimeType(),
+                    videoBitsPerSecond: 5000000
+                });
+
+                const chunks = [];
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) chunks.push(e.data);
+                };
+
+                return new Promise((resolve) => {
+                    mediaRecorder.onstop = () => {
+                        const mimeType = getSupportedMimeType();
+                        const blob = new Blob(chunks, { type: mimeType });
+                        resolve(blob);
+                    };
+
+                    mediaRecorder.start();
+
+                    const totalFrames = fps * duration;
+                    let frameIndex = 0;
+                    const framesPerImage = totalFrames / images.length;
+
+                    function drawFrame() {
+                        if (frameIndex >= totalFrames) {
+                            mediaRecorder.stop();
+                            return;
+                        }
+
+                        // Determine current and next image for interpolation
+                        const imageIdx = Math.min(Math.floor(frameIndex / framesPerImage), images.length - 1);
+                        const nextIdx = Math.min(imageIdx + 1, images.length - 1);
+                        const t = (frameIndex % framesPerImage) / framesPerImage;
+
+                        // Draw current frame
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                        // Apply motion effects
+                        const motionOffset = getMotionTransform(frameIndex, totalFrames);
+
+                        ctx.save();
+                        ctx.translate(motionOffset.x, motionOffset.y);
+                        ctx.scale(motionOffset.scale, motionOffset.scale);
+
+                        // Cross-fade between frames
+                        ctx.globalAlpha = 1;
+                        ctx.drawImage(images[imageIdx], 0, 0, canvas.width, canvas.height);
+
+                        if (imageIdx !== nextIdx && t > 0.3) {
+                            ctx.globalAlpha = (t - 0.3) / 0.7;
+                            ctx.drawImage(images[nextIdx], 0, 0, canvas.width, canvas.height);
+                        }
+
+                        ctx.restore();
+
+                        frameIndex++;
+                        requestAnimationFrame(drawFrame);
+                    }
+
+                    drawFrame();
+                });
+            } catch (error) {
+                console.error('Video creation error:', error);
+                return null;
+            }
+        }
+
+        function getSupportedMimeType() {
+            const types = [
+                'video/webm;codecs=vp9',
+                'video/webm;codecs=vp8',
+                'video/webm',
+                'video/mp4'
+            ];
+            for (const type of types) {
+                if (MediaRecorder.isTypeSupported(type)) return type;
+            }
+            return 'video/webm';
+        }
+
+        function getMotionTransform(frame, total) {
+            const progress = frame / total;
+            const result = { x: 0, y: 0, scale: 1 };
+
+            switch (state.motion) {
+                case 'pan-left':
+                    result.x = -progress * 50;
+                    break;
+                case 'pan-right':
+                    result.x = progress * 50;
+                    break;
+                case 'tilt-up':
+                    result.y = -progress * 40;
+                    break;
+                case 'tilt-down':
+                    result.y = progress * 40;
+                    break;
+                case 'zoom-in':
+                    result.scale = 1 + progress * 0.2;
+                    result.x = -progress * 50;
+                    result.y = -progress * 30;
+                    break;
+                case 'zoom-out':
+                    result.scale = 1.2 - progress * 0.2;
+                    result.x = progress * 50;
+                    result.y = progress * 30;
+                    break;
+                case 'orbit':
+                    result.x = Math.sin(progress * Math.PI * 2) * 30;
+                    result.y = Math.cos(progress * Math.PI * 2) * 15;
+                    break;
+                case 'dolly':
+                    result.scale = 1 + progress * 0.15;
+                    result.y = -progress * 20;
+                    break;
+            }
+
+            return result;
+        }
+
+        // =====================================================
+        // DISPLAY RESULTS
+        // =====================================================
+
+        function displayVideoResult(videoBlob, frames) {
+            const video = document.getElementById('videoResult');
+            const placeholder = document.getElementById('placeholder');
+            const imageResult = document.getElementById('imageResult');
+            const controls = document.getElementById('videoControls');
+
+            placeholder.style.display = 'none';
+            imageResult.style.display = 'none';
+
+            const url = URL.createObjectURL(videoBlob);
+            video.src = url;
+            video.style.display = 'block';
+            controls.classList.add('active');
+
+            video.onloadedmetadata = () => {
+                video.play();
+                document.getElementById('playIcon').className = 'fas fa-pause';
+                updateVideoTime();
+            };
+
+            video.ontimeupdate = updateVideoTime;
+
+            document.getElementById('downloadBtn').style.display = 'flex';
+            document.getElementById('shareBtn').style.display = 'flex';
+
+            // Show frames gallery
+            displayFrameGallery(frames);
+        }
+
+        function displayImageResult(imageUrl, frames) {
+            const image = document.getElementById('imageResult');
+            const video = document.getElementById('videoResult');
+            const placeholder = document.getElementById('placeholder');
+            const controls = document.getElementById('videoControls');
+
+            placeholder.style.display = 'none';
+            video.style.display = 'none';
+            controls.classList.remove('active');
+
+            image.src = imageUrl;
+            image.style.display = 'block';
+
+            document.getElementById('downloadBtn').style.display = 'flex';
+            document.getElementById('shareBtn').style.display = 'flex';
+
+            // Show frames gallery
+            if (frames && frames.length > 1) {
+                displayFrameGallery(frames);
+            }
+        }
+
+        function displayFrameGallery(frames) {
+            const gallery = document.getElementById('frameGallery');
+            gallery.innerHTML = '';
+            gallery.style.display = 'flex';
+
+            frames.forEach((frame, i) => {
+                const thumb = document.createElement('div');
+                thumb.className = `frame-thumb ${i === 0 ? 'active' : ''}`;
+                thumb.innerHTML = `<img src="${frame}" alt="Frame ${i+1}">`;
+                thumb.onclick = () => {
+                    document.querySelectorAll('.frame-thumb').forEach(t => t.classList.remove('active'));
+                    thumb.classList.add('active');
+                    const img = document.getElementById('imageResult');
+                    if (img.style.display !== 'none') {
+                        img.src = frame;
+                    }
+                };
+                gallery.appendChild(thumb);
+            });
+        }
+
+        // =====================================================
+        // VIDEO CONTROLS
+        // =====================================================
+
+        function togglePlayPause() {
+            const video = document.getElementById('videoResult');
+            const icon = document.getElementById('playIcon');
+            if (video.paused) {
+                video.play();
+                icon.className = 'fas fa-pause';
+            } else {
+                video.pause();
+                icon.className = 'fas fa-play';
+            }
+        }
+
+        function toggleMute() {
+            const video = document.getElementById('videoResult');
+            const icon = document.getElementById('muteIcon');
+            video.muted = !video.muted;
+            icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+        }
+
+        function seekVideo(event) {
+            const video = document.getElementById('videoResult');
+            const timeline = event.currentTarget;
+            const rect = timeline.getBoundingClientRect();
+            const pos = (event.clientX - rect.left) / rect.width;
+            video.currentTime = pos * video.duration;
+        }
+
+        function updateVideoTime() {
+            const video = document.getElementById('videoResult');
+            if (!video.duration) return;
+            const progress = (video.currentTime / video.duration) * 100;
+            document.getElementById('timelineFill').style.width = progress + '%';
+            document.getElementById('videoTime').textContent =
+                `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+        }
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function toggleFullscreen() {
+            const frame = document.getElementById('canvasFrame');
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                frame.requestFullscreen().catch(() => {});
+            }
+        }
+
+        // =====================================================
+        // GENERATION OVERLAY
+        // =====================================================
+
+        function showGenOverlay() {
+            document.getElementById('genOverlay').classList.add('active');
+            document.getElementById('placeholder').style.display = 'none';
+            resetGenSteps();
+        }
+
+        function hideGenOverlay() {
+            document.getElementById('genOverlay').classList.remove('active');
+        }
+
+        function resetGenSteps() {
+            for (let i = 1; i <= 5; i++) {
+                const step = document.getElementById(`step${i}`);
+                step.className = 'gen-step';
+                step.querySelector('i').className = 'fas fa-circle';
+            }
+        }
+
+        function updateGenStep(stepNum, status) {
+            const step = document.getElementById(`step${stepNum}`);
+            step.className = `gen-step ${status}`;
+            if (status === 'active') {
+                step.querySelector('i').className = 'fas fa-spinner fa-spin';
+            } else if (status === 'done') {
+                step.querySelector('i').className = 'fas fa-check-circle';
+            }
+        }
+
+        function updateGenStatus(status, substatus) {
+            document.getElementById('genStatus').textContent = status;
+            document.getElementById('genSubstatus').textContent = substatus;
+        }
+
+        function updateGenProgress(percent) {
+            document.getElementById('genProgress').style.width = percent + '%';
+        }
+
+        // =====================================================
+        // HISTORY
+        // =====================================================
+
+        function addToHistory(prompt, thumbnailUrl, duration) {
+            const item = {
+                id: Date.now(),
+                prompt: prompt,
+                thumbnail: thumbnailUrl,
+                duration: duration,
+                date: new Date().toLocaleString(),
+                provider: state.provider,
+                style: state.style
+            };
+
+            state.history.unshift(item);
+            if (state.history.length > 20) state.history.pop();
+
+            // Save (without blob URLs which can't be serialized well)
+            try {
+                // Convert thumbnail to data URL for persistence
+                const canvas = document.createElement('canvas');
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    canvas.width = 160;
+                    canvas.height = 90;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, 160, 90);
+                    item.thumbnail = canvas.toDataURL('image/jpeg', 0.5);
+                    localStorage.setItem('aiVideoStudio_history', JSON.stringify(state.history));
+                };
+                img.src = thumbnailUrl;
+            } catch (e) {
+                // Skip persistence if cross-origin
+            }
+
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            if (state.history.length === 0) return;
+
+            list.innerHTML = state.history.map(item => `
+                <div class="history-item" onclick="loadHistoryItem('${item.id}')">
+                    <div class="history-thumb">
+                        ${item.thumbnail ? `<img src="${item.thumbnail}" alt="Thumbnail">` : ''}
+                        <span class="duration">${item.duration}s</span>
+                    </div>
+                    <div class="history-prompt">${escapeHtml(item.prompt)}</div>
+                    <div class="history-meta">
+                        <span>${item.provider}</span>
+                        <span>${item.date}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadHistoryItem(id) {
+            const item = state.history.find(h => h.id === parseInt(id));
+            if (item) {
+                document.getElementById('promptInput').value = item.prompt;
+                document.getElementById('charCount').textContent = item.prompt.length;
+                showToast('Prompt loaded from history', 'info');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // =====================================================
+        // EXPORT / DOWNLOAD
+        // =====================================================
+
+        function downloadResult() {
+            const video = document.getElementById('videoResult');
+            const image = document.getElementById('imageResult');
+
+            if (video.style.display !== 'none' && video.src) {
+                const a = document.createElement('a');
+                a.href = video.src;
+                a.download = `ai-video-${Date.now()}.webm`;
+                a.click();
+                showToast('Video downloaded!', 'success');
+            } else if (image.style.display !== 'none' && image.src) {
+                const a = document.createElement('a');
+                a.href = image.src;
+                a.download = `ai-frame-${Date.now()}.png`;
+                a.click();
+                showToast('Image downloaded!', 'success');
+            }
+        }
+
+        function exportProject() {
+            const project = {
+                prompt: document.getElementById('promptInput').value,
+                negativePrompt: document.getElementById('negativePrompt').value,
+                settings: {
+                    provider: state.provider,
+                    style: state.style,
+                    aspect: state.aspect,
+                    motion: state.motion,
+                    duration: document.getElementById('durationSlider').value,
+                    fps: document.getElementById('fpsSlider').value,
+                    resolution: document.getElementById('resolutionSelect').value,
+                    guidance: document.getElementById('guidanceSlider').value,
+                    steps: document.getElementById('stepsSlider').value,
+                    seed: document.getElementById('seedInput').value
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `ai-video-project-${Date.now()}.json`;
+            a.click();
+            showToast('Project exported!', 'success');
+        }
+
+        async function shareResult() {
+            try {
+                if (navigator.share) {
+                    await navigator.share({
+                        title: 'AI Generated Video',
+                        text: document.getElementById('promptInput').value
+                    });
+                } else {
+                    await navigator.clipboard.writeText(document.getElementById('promptInput').value);
+                    showToast('Prompt copied to clipboard!', 'success');
+                }
+            } catch (e) {
+                showToast('Share cancelled', 'info');
+            }
+        }
+
+        // =====================================================
+        // UTILITIES
+        // =====================================================
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+</html>
