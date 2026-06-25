@@ -1,1367 +1,1434 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Video Studio Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        :root {
-            --bg0:#06060c;--bg1:#0c0c16;--bg2:#12121f;--bg3:#1a1a2e;
-            --acc:#7c3aed;--acc2:#a855f7;--accg:rgba(124,58,237,.25);
-            --pink:#ec4899;--cyan:#06b6d4;--green:#10b981;--orange:#f59e0b;--red:#ef4444;--blue:#3b82f6;
-            --t1:#f1f5f9;--t2:#94a3b8;--t3:#64748b;--brd:rgba(255,255,255,.06);
-        }
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Inter',sans-serif;background:var(--bg0);color:var(--t1);height:100vh;overflow:hidden}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VideoGen AI Studio — FAL.ai Powered</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{
+  --bg0:#07070f;--bg1:#0d0d1a;--bg2:#131325;--bg3:#1c1c35;
+  --acc:#7c3aed;--acc2:#a855f7;--accg:rgba(124,58,237,.22);
+  --pink:#ec4899;--cyan:#06b6d4;--green:#10b981;
+  --orange:#f59e0b;--red:#ef4444;--blue:#3b82f6;
+  --t1:#f1f5f9;--t2:#94a3b8;--t3:#64748b;--brd:rgba(255,255,255,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',sans-serif;background:var(--bg0);color:var(--t1)}
 
-        .bg-fx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-        .bg-fx .o{position:absolute;border-radius:50%;filter:blur(120px);opacity:.1;animation:fl 30s ease-in-out infinite}
-        .bg-fx .o:nth-child(1){width:700px;height:700px;background:var(--acc);top:-250px;right:-250px}
-        .bg-fx .o:nth-child(2){width:500px;height:500px;background:var(--cyan);bottom:-200px;left:-200px;animation-delay:-10s}
-        .bg-fx .o:nth-child(3){width:400px;height:400px;background:var(--pink);top:50%;left:40%;animation-delay:-20s}
-        @keyframes fl{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(80px,-60px) scale(1.15)}66%{transform:translate(-50px,70px) scale(.9)}}
+.bg-fx{position:fixed;inset:0;z-index:0;pointer-events:none}
+.bg-fx span{position:absolute;border-radius:50%;filter:blur(130px);opacity:.09;animation:fl 28s ease-in-out infinite}
+.bg-fx span:nth-child(1){width:650px;height:650px;background:var(--acc);top:-220px;right:-220px}
+.bg-fx span:nth-child(2){width:550px;height:550px;background:var(--cyan);bottom:-200px;left:-200px;animation-delay:-9s}
+.bg-fx span:nth-child(3){width:380px;height:380px;background:var(--pink);top:42%;left:44%;animation-delay:-18s}
+@keyframes fl{0%,100%{transform:translate(0,0)scale(1)}33%{transform:translate(70px,-55px)scale(1.12)}66%{transform:translate(-45px,65px)scale(.91)}}
 
-        .app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh}
+.app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh}
 
-        /* HEADER */
-        .hdr{padding:8px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--brd);background:rgba(6,6,12,.9);backdrop-filter:blur(20px);flex-shrink:0}
-        .logo{display:flex;align-items:center;gap:8px}
-        .logo-i{width:32px;height:32px;background:linear-gradient(135deg,var(--acc),var(--pink));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 0 20px var(--accg)}
-        .logo-t{font-size:16px;font-weight:800;background:linear-gradient(135deg,#fff,var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-        .badge{font-size:8px;padding:2px 6px;background:linear-gradient(135deg,var(--acc),var(--pink));border-radius:12px;font-weight:700;letter-spacing:.6px}
-        .hdr-r{display:flex;align-items:center;gap:8px}
-        .hbtn{padding:6px 12px;border-radius:7px;border:1px solid var(--brd);background:0;color:var(--t2);cursor:pointer;font-size:11px;font-weight:500;transition:.3s;display:flex;align-items:center;gap:5px;font-family:inherit}
-        .hbtn:hover{border-color:var(--acc);color:var(--t1)}
-        .st{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--t3)}
-        .st-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(16,185,129,.5);animation:pls 2s infinite}
-        .st-dot.busy{background:var(--orange);box-shadow:0 0 8px rgba(245,158,11,.5)}
-        .st-dot.err{background:var(--red)}
-        @keyframes pls{0%,100%{opacity:1}50%{opacity:.3}}
+/* ── HEADER ── */
+.hdr{padding:10px 22px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--brd);background:rgba(7,7,15,.92);backdrop-filter:blur(22px);flex-shrink:0}
+.logo{display:flex;align-items:center;gap:9px}
+.logo-ico{width:36px;height:36px;background:linear-gradient(135deg,var(--acc),var(--pink));border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 22px var(--accg)}
+.logo-txt{font-size:18px;font-weight:800;background:linear-gradient(135deg,#fff,var(--acc2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.badge{font-size:8px;padding:2px 7px;background:linear-gradient(135deg,var(--acc),var(--pink));
+  border-radius:10px;font-weight:700;letter-spacing:.7px;color:#fff}
+.hdr-r{display:flex;align-items:center;gap:8px}
+.hbtn{padding:7px 13px;border-radius:7px;border:1px solid var(--brd);background:0;color:var(--t2);
+  cursor:pointer;font-size:11px;font-weight:500;transition:.3s;display:flex;align-items:center;gap:5px;font-family:inherit}
+.hbtn:hover{border-color:var(--acc);color:var(--t1);background:rgba(124,58,237,.08)}
+.hbtn.pri{background:linear-gradient(135deg,var(--acc),var(--pink));border:none;color:#fff}
+.hbtn.pri:hover{transform:translateY(-1px);box-shadow:0 5px 20px rgba(124,58,237,.4)}
+.st{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t3)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);
+  animation:pls 2s infinite;box-shadow:0 0 7px rgba(16,185,129,.5)}
+.dot.busy{background:var(--orange);box-shadow:0 0 7px rgba(245,158,11,.5)}
+.dot.err{background:var(--red);box-shadow:0 0 7px rgba(239,68,68,.5)}
+@keyframes pls{0%,100%{opacity:1}50%{opacity:.3}}
 
-        /* LAYOUT */
-        .lay{display:flex;flex:1;overflow:hidden}
+/* ── LAYOUT ── */
+.body{display:flex;flex:1;overflow:hidden}
 
-        /* SIDEBAR */
-        .side{width:320px;min-width:320px;border-right:1px solid var(--brd);background:rgba(12,12,22,.7);backdrop-filter:blur(10px);overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column}
-        .side::-webkit-scrollbar{width:3px}
-        .side::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:3px}
-        .sec{padding:14px 16px;border-bottom:1px solid var(--brd)}
-        .sec-t{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--t3);margin-bottom:10px;display:flex;align-items:center;gap:6px}
-        .sec-t i{color:var(--acc2);font-size:10px}
+/* ── SIDEBAR ── */
+.side{width:315px;min-width:315px;border-right:1px solid var(--brd);
+  background:rgba(13,13,26,.8);backdrop-filter:blur(14px);
+  overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column}
+.side::-webkit-scrollbar{width:3px}
+.side::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);border-radius:3px}
+.sec{padding:14px 16px;border-bottom:1px solid var(--brd)}
+.sec-t{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;
+  color:var(--t3);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sec-t i{color:var(--acc2);font-size:10px}
 
-        textarea,.tinput{width:100%;padding:10px 12px;background:var(--bg1);border:1px solid var(--brd);border-radius:10px;color:var(--t1);font-size:12px;font-family:inherit;line-height:1.5;resize:vertical;transition:.3s}
-        textarea:focus,.tinput:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--accg)}
-        .prompt-box{min-height:100px}
-        .neg-box{min-height:40px;font-size:11px}
+textarea,.inp{width:100%;padding:9px 12px;background:var(--bg1);border:1px solid var(--brd);
+  border-radius:9px;color:var(--t1);font-size:12px;font-family:inherit;transition:.3s}
+textarea{resize:vertical;line-height:1.5}
+textarea:focus,.inp:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--accg)}
+.prompt-ta{min-height:100px}
+.neg-ta{min-height:40px;font-size:11px}
 
-        .chips{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
-        .chip{padding:3px 8px;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-radius:12px;font-size:9px;color:var(--t2);cursor:pointer;transition:.3s;font-family:inherit}
-        .chip:hover{background:rgba(124,58,237,.1);border-color:var(--acc);color:var(--acc2)}
+.chips{display:flex;gap:3px;margin-top:7px;flex-wrap:wrap}
+.chip{padding:3px 8px;background:rgba(255,255,255,.025);border:1px solid var(--brd);
+  border-radius:10px;font-size:9px;color:var(--t2);cursor:pointer;transition:.3s;font-family:inherit}
+.chip:hover{background:rgba(124,58,237,.1);border-color:var(--acc);color:var(--acc2)}
 
-        .ctrl{margin-bottom:12px}
-        .ctrl-l{font-size:10px;font-weight:600;color:var(--t2);margin-bottom:5px;display:flex;justify-content:space-between}
-        .ctrl-v{font-weight:700;color:var(--acc2)}
-        select.csel{width:100%;padding:8px 10px;background:var(--bg1);border:1px solid var(--brd);border-radius:8px;color:var(--t1);font-size:11px;font-family:inherit;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cpath fill='%2394a3b8' d='M4 6L0 2h8z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
-        select.csel:focus{outline:none;border-color:var(--acc)}
-        input[type=range]{width:100%;height:4px;-webkit-appearance:none;background:var(--bg3);border-radius:2px;outline:none;cursor:pointer}
-        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:linear-gradient(135deg,var(--acc),var(--acc2));border-radius:50%;cursor:pointer;box-shadow:0 0 8px var(--accg)}
+.ctrl{margin-bottom:12px}
+.ctrl:last-child{margin-bottom:0}
+.ctrl-l{font-size:10px;font-weight:600;color:var(--t2);margin-bottom:5px;display:flex;justify-content:space-between}
+.ctrl-v{color:var(--acc2);font-weight:700}
+select{width:100%;padding:7px 10px;background:var(--bg1);border:1px solid var(--brd);
+  border-radius:7px;color:var(--t1);font-size:11px;font-family:inherit;cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath fill='%2394a3b8' d='M4 6L0 2h8z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center}
+select:focus{outline:none;border-color:var(--acc)}
+input[type=range]{width:100%;height:4px;-webkit-appearance:none;background:var(--bg3);border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));border-radius:50%;cursor:pointer;box-shadow:0 0 8px var(--accg)}
 
-        .og{display:grid;gap:5px}
-        .og.c2{grid-template-columns:1fr 1fr}
-        .og.c3{grid-template-columns:1fr 1fr 1fr}
-        .ob{padding:7px 5px;background:var(--bg1);border:1px solid var(--brd);border-radius:7px;color:var(--t2);font-size:10px;font-weight:500;cursor:pointer;transition:.3s;text-align:center;font-family:inherit}
-        .ob:hover{border-color:rgba(124,58,237,.3);color:var(--t1)}
-        .ob.on{background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(168,85,247,.05));border-color:var(--acc);color:var(--t1);box-shadow:0 0 10px var(--accg)}
-        .ob .oi{font-size:14px;display:block;margin-bottom:1px}
+.og{display:grid;gap:4px}
+.og.c2{grid-template-columns:1fr 1fr}
+.og.c3{grid-template-columns:1fr 1fr 1fr}
+.ob{padding:7px 5px;background:var(--bg1);border:1px solid var(--brd);border-radius:7px;
+  color:var(--t2);font-size:10px;font-weight:500;cursor:pointer;transition:.3s;text-align:center;font-family:inherit}
+.ob:hover{border-color:rgba(124,58,237,.3);color:var(--t1)}
+.ob.on{background:rgba(124,58,237,.12);border-color:var(--acc);color:var(--t1);box-shadow:0 0 10px var(--accg)}
+.ob .oi{font-size:13px;display:block;margin-bottom:1px}
 
-        /* Provider cards */
-        .prov-card{padding:10px 12px;background:var(--bg1);border:1px solid var(--brd);border-radius:10px;cursor:pointer;transition:.3s;display:flex;align-items:center;gap:10px;margin-bottom:6px}
-        .prov-card:hover{border-color:rgba(124,58,237,.3)}
-        .prov-card.on{border-color:var(--acc);background:rgba(124,58,237,.08);box-shadow:0 0 15px var(--accg)}
-        .prov-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
-        .prov-info{flex:1;min-width:0}
-        .prov-name{font-size:11px;font-weight:600}
-        .prov-desc{font-size:9px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .prov-badge{font-size:8px;padding:2px 6px;border-radius:8px;font-weight:700}
-        .prov-badge.free{background:rgba(16,185,129,.15);color:var(--green)}
-        .prov-badge.key{background:rgba(245,158,11,.15);color:var(--orange)}
+/* Model cards */
+.mcard{padding:10px 12px;background:var(--bg1);border:1px solid var(--brd);border-radius:9px;
+  cursor:pointer;transition:.3s;display:flex;align-items:center;gap:9px;margin-bottom:5px}
+.mcard:hover{border-color:rgba(124,58,237,.3);background:rgba(124,58,237,.04)}
+.mcard.on{border-color:var(--acc);background:rgba(124,58,237,.08);box-shadow:0 0 14px var(--accg)}
+.mcard:last-child{margin-bottom:0}
+.mc-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.mc-info{flex:1;min-width:0}
+.mc-name{font-size:11px;font-weight:600;line-height:1.2}
+.mc-desc{font-size:9px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.mc-badge{font-size:8px;padding:2px 6px;border-radius:5px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.mc-badge.fast{background:rgba(16,185,129,.12);color:var(--green)}
+.mc-badge.hq{background:rgba(124,58,237,.12);color:var(--acc2)}
+.mc-badge.free{background:rgba(6,182,212,.12);color:var(--cyan)}
 
-        /* Motion */
-        .mg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
-        .mb{padding:6px;background:var(--bg1);border:1px solid var(--brd);border-radius:6px;color:var(--t3);cursor:pointer;transition:.3s;text-align:center;font-size:13px;font-family:inherit}
-        .mb:hover{border-color:rgba(124,58,237,.3);color:var(--t1)}
-        .mb.on{border-color:var(--acc);color:var(--acc2);background:rgba(124,58,237,.08)}
-        .mb .ml{display:block;font-size:7px;font-weight:600;margin-top:0}
+/* Gen section */
+.gen-wrap{padding:14px 16px;border-top:1px solid var(--brd);background:rgba(7,7,15,.4);margin-top:auto;flex-shrink:0}
+.gen-btn{width:100%;padding:13px 18px;background:linear-gradient(135deg,var(--acc),var(--pink));
+  border:none;border-radius:11px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;
+  transition:.3s;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;
+  position:relative;overflow:hidden}
+.gen-btn::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transition:left .6s}
+.gen-btn:hover::after{left:100%}
+.gen-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 7px 28px rgba(124,58,237,.45)}
+.gen-btn:disabled{opacity:.45;cursor:not-allowed}
+.gen-note{margin-top:5px;font-size:9px;color:var(--t3);text-align:center}
 
-        /* Generate */
-        .gen-wrap{padding:14px 16px;border-top:1px solid var(--brd);background:rgba(6,6,12,.5);margin-top:auto;flex-shrink:0}
-        .gen-btn{width:100%;padding:13px 18px;background:linear-gradient(135deg,var(--acc),var(--pink));border:none;border-radius:11px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:.3s;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;position:relative;overflow:hidden}
-        .gen-btn::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transition:left .5s}
-        .gen-btn:hover::after{left:100%}
-        .gen-btn:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(124,58,237,.4)}
-        .gen-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-        .gen-btn:disabled::after{display:none}
-        .gen-inf{text-align:center;font-size:9px;color:var(--t3);margin-top:5px}
+/* ── PREVIEW ── */
+.prev{flex:1;display:flex;flex-direction:column;min-width:0}
+.prev-bar{padding:8px 18px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--brd);background:rgba(13,13,26,.4);flex-shrink:0;gap:8px}
+.prev-info{font-size:10px;color:var(--t3);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prev-tools{display:flex;gap:5px;flex-shrink:0}
+.tbtn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  border-radius:6px;border:1px solid var(--brd);background:0;color:var(--t3);cursor:pointer;transition:.3s;font-size:12px}
+.tbtn:hover{border-color:var(--acc);color:var(--t1)}
 
-        /* PREVIEW */
-        .prev{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg0)}
-        .prev-bar{padding:8px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--brd);background:rgba(12,12,22,.3);flex-shrink:0}
-        .prev-tabs{display:flex;gap:2px;background:var(--bg1);padding:2px;border-radius:6px}
-        .ptab{padding:5px 12px;border-radius:5px;border:none;background:0;color:var(--t3);font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;transition:.3s}
-        .ptab.on{background:var(--acc);color:#fff}
-        .ptools{display:flex;gap:5px}
-        .tbtn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--brd);background:0;color:var(--t3);cursor:pointer;transition:.3s;font-size:12px}
-        .tbtn:hover{border-color:var(--acc);color:var(--t1)}
+.canvas-area{flex:1;display:flex;align-items:center;justify-content:center;padding:18px;overflow:hidden}
+.vframe{background:#000;border-radius:14px;border:1px solid var(--brd);overflow:hidden;
+  position:relative;box-shadow:0 20px 60px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.03)}
+.vframe.r169{width:100%;max-width:900px;aspect-ratio:16/9}
+.vframe.r916{max-width:420px;width:100%;aspect-ratio:9/16}
+.vframe.r11{max-width:560px;width:100%;aspect-ratio:1/1}
 
-        .canvas-area{flex:1;display:flex;align-items:center;justify-content:center;padding:16px;position:relative;overflow:hidden}
-        .vframe{width:100%;max-width:900px;aspect-ratio:16/9;background:#000;border-radius:12px;border:1px solid var(--brd);overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.6)}
-        .vframe.r916{max-width:400px;aspect-ratio:9/16}
-        .vframe.r11{max-width:520px;aspect-ratio:1/1}
+.ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:24px;text-align:center;background:radial-gradient(ellipse at center,rgba(124,58,237,.06) 0%,transparent 70%)}
+.ph-icon{font-size:46px;opacity:.1;margin-bottom:12px;background:linear-gradient(135deg,var(--acc),var(--pink));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.ph h3{font-size:15px;font-weight:600;color:var(--t2);margin-bottom:6px}
+.ph p{font-size:11px;color:var(--t3);max-width:290px;line-height:1.6}
+.ph .api-ok{margin-top:12px;padding:8px 14px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);
+  border-radius:8px;font-size:10px;color:var(--green);display:flex;align-items:center;gap:6px}
 
-        .placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
-        .placeholder .pi{font-size:44px;opacity:.15;margin-bottom:10px;background:linear-gradient(135deg,var(--acc),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-        .placeholder h3{font-size:14px;font-weight:600;color:var(--t2);margin-bottom:4px}
-        .placeholder p{font-size:11px;color:var(--t3);max-width:280px;line-height:1.5}
+#vid{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;display:none}
 
-        #resultVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:none;background:#000}
-        #resultImg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:none;background:#000}
+/* Overlay */
+.ov{position:absolute;inset:0;background:rgba(7,7,15,.97);display:none;
+  flex-direction:column;align-items:center;justify-content:center;z-index:20;border-radius:14px}
+.ov.on{display:flex}
+.spin{width:58px;height:58px;position:relative;margin-bottom:16px}
+.spin::before,.spin::after{content:'';position:absolute;border-radius:50%}
+.spin::before{inset:0;border:3px solid transparent;border-top-color:var(--acc);
+  border-right-color:var(--pink);animation:sp 1s linear infinite}
+.spin::after{inset:13%;border:3px solid transparent;border-bottom-color:var(--cyan);
+  border-left-color:var(--acc2);animation:sp .72s linear infinite reverse}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ov-s{font-size:14px;font-weight:600;margin-bottom:4px;text-align:center;padding:0 20px}
+.ov-ss{font-size:10px;color:var(--t3);margin-bottom:14px}
+.ov-bar{width:220px;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.ov-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--pink));transition:width .5s}
+.ov-steps{margin-top:14px;display:flex;flex-direction:column;gap:6px;width:220px}
+.ov-step{display:flex;align-items:center;gap:8px;font-size:9px;color:var(--t3)}
+.ov-step.act{color:var(--acc2)}
+.ov-step.ok{color:var(--green)}
+.ov-step i{width:12px;text-align:center;font-size:9px}
+.ov-eta{margin-top:10px;font-size:9px;color:var(--t3);font-variant-numeric:tabular-nums}
+.ov-cancel{margin-top:12px;padding:6px 16px;border:1px solid rgba(239,68,68,.3);border-radius:6px;
+  background:0;color:rgba(239,68,68,.7);cursor:pointer;font-size:10px;font-family:inherit;transition:.3s}
+.ov-cancel:hover{border-color:var(--red);color:var(--red)}
 
-        /* Overlay */
-        .gen-ov{position:absolute;inset:0;background:rgba(6,6,12,.97);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;border-radius:12px}
-        .gen-ov.on{display:flex}
-        .spinner{width:60px;height:60px;position:relative;margin-bottom:16px}
-        .spinner::before,.spinner::after{content:'';position:absolute;border-radius:50%}
-        .spinner::before{inset:0;border:3px solid transparent;border-top-color:var(--acc);border-right-color:var(--pink);animation:sp 1s linear infinite}
-        .spinner::after{inset:12%;border:3px solid transparent;border-bottom-color:var(--cyan);border-left-color:var(--acc2);animation:sp .7s linear infinite reverse}
-        @keyframes sp{to{transform:rotate(360deg)}}
-        .gs{font-size:14px;font-weight:600;margin-bottom:4px}
-        .gss{font-size:10px;color:var(--t3);margin-bottom:14px}
-        .gbar{width:200px;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden}
-        .gfill{height:100%;background:linear-gradient(90deg,var(--acc),var(--pink));width:0%;transition:width .4s}
-        .gsteps{margin-top:14px;display:flex;flex-direction:column;gap:5px;width:200px}
-        .gst{display:flex;align-items:center;gap:7px;font-size:9px;color:var(--t3)}
-        .gst.act{color:var(--acc2)}
-        .gst.ok{color:var(--green)}
-        .gst i{width:12px;text-align:center}
+/* Video controls */
+.vc{position:absolute;bottom:0;left:0;right:0;padding:10px 14px;
+  background:linear-gradient(transparent,rgba(0,0,0,.92));display:none;
+  align-items:center;gap:8px;border-radius:0 0 14px 14px;transition:opacity .3s}
+.vc.on{display:flex}
+.vcb{width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  border:none;background:rgba(255,255,255,.1);color:#fff;border-radius:5px;cursor:pointer;
+  transition:.2s;font-size:11px;flex-shrink:0}
+.vcb:hover{background:rgba(255,255,255,.2)}
+.vtl{flex:1;height:4px;background:rgba(255,255,255,.15);border-radius:2px;cursor:pointer;position:relative}
+.vtl-f{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:2px;pointer-events:none;transition:width .1s}
+.vtm{font-size:9px;color:rgba(255,255,255,.55);font-variant-numeric:tabular-nums;white-space:nowrap;flex-shrink:0}
 
-        /* Video controls */
-        .vc{position:absolute;bottom:0;left:0;right:0;padding:10px 14px;background:linear-gradient(transparent,rgba(0,0,0,.9));display:none;align-items:center;gap:8px;border-radius:0 0 12px 12px}
-        .vc.on{display:flex}
-        .vcb{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:none;background:rgba(255,255,255,.1);color:#fff;border-radius:5px;cursor:pointer;transition:.2s;font-size:10px}
-        .vcb:hover{background:rgba(255,255,255,.2)}
-        .vtl{flex:1;height:3px;background:rgba(255,255,255,.12);border-radius:2px;cursor:pointer;position:relative}
-        .vtl-f{height:100%;background:var(--acc);border-radius:2px;width:0%;pointer-events:none}
-        .vtm{font-size:9px;color:rgba(255,255,255,.5);font-variant-numeric:tabular-nums;white-space:nowrap}
+/* Right panel */
+.rp{width:265px;min-width:265px;border-left:1px solid var(--brd);
+  background:rgba(13,13,26,.6);overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column}
+.rp::-webkit-scrollbar{width:3px}
+.rp::-webkit-scrollbar-thumb{background:rgba(255,255,255,.06);border-radius:3px}
+.log-entry{padding:7px 12px;border-bottom:1px solid rgba(255,255,255,.025);
+  font-size:9px;font-family:'Courier New',monospace;line-height:1.45;word-break:break-all}
+.log-entry.info{color:var(--t3)}
+.log-entry.ok{color:var(--green)}
+.log-entry.err{color:var(--red)}
+.log-entry.warn{color:var(--orange)}
+.log-entry .ts{opacity:.5;margin-right:4px}
 
-        /* Log panel */
-        .logp{width:280px;min-width:280px;border-left:1px solid var(--brd);background:rgba(12,12,22,.5);overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column}
-        .logp::-webkit-scrollbar{width:3px}
-        .logp::-webkit-scrollbar-thumb{background:rgba(255,255,255,.06);border-radius:3px}
-        .log-entry{padding:8px 12px;border-bottom:1px solid var(--brd);font-size:9px;color:var(--t3);font-family:'Courier New',monospace;line-height:1.4;word-break:break-all}
-        .log-entry.info{color:var(--blue)}
-        .log-entry.ok{color:var(--green)}
-        .log-entry.err{color:var(--red)}
-        .log-entry.warn{color:var(--orange)}
-        .log-entry .ts{color:var(--t3);margin-right:4px}
+/* Audio viz */
+.audio-viz{width:100%;height:38px;border-radius:6px;overflow:hidden;background:var(--bg1);display:none;margin-top:6px}
+.audio-viz.on{display:block}
 
-        /* Toast */
-        .toasts{position:fixed;top:50px;right:12px;z-index:9999;display:flex;flex-direction:column;gap:5px}
-        .toast{padding:10px 14px;background:var(--bg2);border:1px solid var(--brd);border-radius:8px;display:flex;align-items:center;gap:8px;font-size:11px;box-shadow:0 10px 40px rgba(0,0,0,.5);animation:tIn .3s ease;min-width:240px;max-width:360px}
-        .toast.ok{border-left:3px solid var(--green)}
-        .toast.err{border-left:3px solid var(--red)}
-        .toast.inf{border-left:3px solid var(--blue)}
-        @keyframes tIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+/* Toast */
+.toasts{position:fixed;top:58px;right:13px;z-index:9999;display:flex;flex-direction:column;gap:5px;pointer-events:none}
+.toast{padding:10px 14px;background:var(--bg2);border:1px solid var(--brd);border-radius:9px;
+  display:flex;align-items:center;gap:8px;font-size:11px;box-shadow:0 12px 40px rgba(0,0,0,.45);
+  animation:tIn .3s ease;min-width:230px;max-width:360px;pointer-events:auto}
+.toast.ok{border-left:3px solid var(--green)}
+.toast.err{border-left:3px solid var(--red)}
+.toast.inf{border-left:3px solid var(--blue)}
+.toast.warn{border-left:3px solid var(--orange)}
+@keyframes tIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
 
-        /* Modal */
-        .mbg{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:1000;display:none;align-items:center;justify-content:center}
-        .mbg.on{display:flex}
-        .modal{background:var(--bg2);border:1px solid var(--brd);border-radius:14px;padding:24px;max-width:500px;width:92%}
-        .modal h2{font-size:16px;font-weight:700;margin-bottom:5px}
-        .modal>p{font-size:11px;color:var(--t2);line-height:1.5;margin-bottom:14px}
-        .mg2{margin-bottom:12px}
-        .mg2 label{display:block;font-size:10px;font-weight:600;color:var(--t2);margin-bottom:4px}
-        .mg2 .note{font-size:9px;color:var(--t3);margin-top:3px}
-        .mg2 a{color:var(--acc2);text-decoration:none}
-        .mg2 a:hover{text-decoration:underline}
-        .macts{display:flex;gap:6px;justify-content:flex-end;margin-top:16px}
-        .mbtn{padding:8px 16px;border-radius:7px;border:1px solid var(--brd);background:0;color:var(--t2);cursor:pointer;font-size:11px;font-weight:600;font-family:inherit;transition:.3s}
-        .mbtn.pri{background:linear-gradient(135deg,var(--acc),var(--pink));border:none;color:#fff}
-        .mbtn:hover{transform:translateY(-1px)}
+/* Warning banner */
+.warn-banner{padding:8px 16px;background:rgba(239,68,68,.08);border-bottom:1px solid rgba(239,68,68,.15);
+  font-size:10px;color:rgba(239,68,68,.8);display:flex;align-items:center;gap:7px;flex-shrink:0}
 
-        /* Duration info */
-        .dur-info{margin-top:6px;padding:6px 10px;background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.15);border-radius:6px;display:flex;align-items:center;gap:6px}
-        .dur-info .di-i{font-size:14px}
-        .dur-info .di-t{font-size:10px;font-weight:600;color:var(--t1)}
-        .dur-info .di-d{font-size:8px;color:var(--t3)}
-
-        @media(max-width:1200px){.logp{display:none}}
-        @media(max-width:900px){.side{width:100%;min-width:unset;max-height:45vh;border-right:none;border-bottom:1px solid var(--brd)}.lay{flex-direction:column}}
-    </style>
+@media(max-width:1150px){.rp{display:none}}
+@media(max-width:850px){.side{width:100%;min-width:unset;max-height:44vh;border-right:none;border-bottom:1px solid var(--brd)}.body{flex-direction:column}}
+</style>
 </head>
 <body>
-<div class="bg-fx"><div class="o"></div><div class="o"></div><div class="o"></div></div>
+<div class="bg-fx"><span></span><span></span><span></span></div>
 <div class="toasts" id="toasts"></div>
 
-<!-- API Modal -->
-<div class="mbg" id="apiModal">
-    <div class="modal">
-        <h2>🔑 API Configuration</h2>
-        <p>Configure API access for video generation. Some providers are free.</p>
-        <div class="mg2">
-            <label>Hugging Face Token</label>
-            <input type="password" class="tinput" id="kHF" placeholder="hf_xxxxxxxxx">
-            <div class="note">Free at <a href="https://huggingface.co/settings/tokens" target="_blank">huggingface.co/settings/tokens</a></div>
-        </div>
-        <div class="mg2">
-            <label>Replicate API Token</label>
-            <input type="password" class="tinput" id="kReplicate" placeholder="r8_xxxxxxxxx">
-            <div class="note">Free tier at <a href="https://replicate.com/account/api-tokens" target="_blank">replicate.com</a></div>
-        </div>
-        <div class="mg2">
-            <label>FAL.ai Key</label>
-            <input type="password" class="tinput" id="kFal" placeholder="fal_xxxxxxxxx">
-            <div class="note">Free credits at <a href="https://fal.ai" target="_blank">fal.ai</a></div>
-        </div>
-        <div class="mg2">
-            <label>Pollinations / PiAPI (No key needed ✓)</label>
-            <input class="tinput" value="Free — no key required" disabled style="opacity:.4">
-        </div>
-        <div class="macts">
-            <button class="mbtn" onclick="document.getElementById('apiModal').classList.remove('on')">Cancel</button>
-            <button class="mbtn pri" onclick="saveKeys()"><i class="fas fa-save"></i> Save</button>
-        </div>
-    </div>
+<div class="app">
+
+<!-- WARNING BANNER -->
+<div class="warn-banner">
+  <i class="fas fa-exclamation-triangle"></i>
+  <span>⚠️ Votre clé FAL.ai a été partagée publiquement. Régénérez-la sur <a href="https://fal.ai/dashboard/keys" target="_blank" style="color:var(--acc2);text-decoration:none">fal.ai/dashboard/keys</a> dès que possible.</span>
 </div>
 
-<div class="app">
-    <header class="hdr">
-        <div class="logo">
-            <div class="logo-i"><i class="fas fa-film"></i></div>
-            <span class="logo-t">VideoGen AI</span>
-            <span class="badge">PRO</span>
-        </div>
-        <div class="hdr-r">
-            <div class="st"><div class="st-dot" id="stDot"></div><span id="stTxt">Ready</span></div>
-            <button class="hbtn" onclick="document.getElementById('apiModal').classList.add('on')"><i class="fas fa-key"></i> API</button>
-            <button class="hbtn" id="dlBtn" style="display:none" onclick="downloadResult()"><i class="fas fa-download"></i> Download</button>
-        </div>
-    </header>
+<header class="hdr">
+  <div class="logo">
+    <div class="logo-ico"><i class="fas fa-film"></i></div>
+    <span class="logo-txt">VideoGen AI</span>
+    <span class="badge">FAL.ai</span>
+  </div>
+  <div class="hdr-r">
+    <div class="st"><div class="dot" id="stDot"></div><span id="stTxt">Prêt · FAL.ai connecté</span></div>
+    <button class="hbtn" id="dlBtn" style="display:none" onclick="doDownload()"><i class="fas fa-download"></i> Télécharger</button>
+    <button class="hbtn pri" onclick="generate()"><i class="fas fa-play"></i> Générer</button>
+  </div>
+</header>
 
-    <div class="lay">
-        <!-- SIDEBAR -->
-        <aside class="side">
-            <div class="sec">
-                <div class="sec-t"><i class="fas fa-pen-fancy"></i> Video Prompt</div>
-                <textarea class="prompt-box" id="prompt" placeholder="Describe your video...&#10;&#10;Example: A majestic dragon flying over a medieval castle at sunset, cinematic aerial shot, volumetric clouds, epic fantasy"></textarea>
-                <div class="chips">
-                    <button class="chip" onclick="addC('cinematic 4K, dramatic lighting')">🎬 Cinematic</button>
-                    <button class="chip" onclick="addC('slow motion, 120fps')">🐌 Slow-mo</button>
-                    <button class="chip" onclick="addC('aerial drone shot, sweeping')">🚁 Aerial</button>
-                    <button class="chip" onclick="addC('golden hour, warm sunlight')">🌅 Golden</button>
-                    <button class="chip" onclick="addC('photorealistic, ultra detailed')">✨ Real</button>
-                    <button class="chip" onclick="addC('time-lapse, fast motion')">⏩ Timelapse</button>
-                </div>
-            </div>
+<div class="body">
+<!-- SIDEBAR -->
+<aside class="side">
 
-            <div class="sec">
-                <div class="sec-t"><i class="fas fa-ban"></i> Negative Prompt</div>
-                <textarea class="neg-box" id="negPrompt">blurry, low quality, distorted, watermark, text, ugly, static, no motion</textarea>
-            </div>
-
-            <!-- PROVIDER -->
-            <div class="sec">
-                <div class="sec-t"><i class="fas fa-robot"></i> AI Video Provider</div>
-                <div class="prov-card on" onclick="setProv(this,'piapi')" data-p="piapi">
-                    <div class="prov-ico" style="background:linear-gradient(135deg,#10b981,#06b6d4)">🎥</div>
-                    <div class="prov-info"><div class="prov-name">PiAPI (Kling/Luma)</div><div class="prov-desc">Real AI video generation</div></div>
-                    <span class="prov-badge free">FREE</span>
-                </div>
-                <div class="prov-card" onclick="setProv(this,'hfvideo')" data-p="hfvideo">
-                    <div class="prov-ico" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">🤗</div>
-                    <div class="prov-info"><div class="prov-name">HuggingFace Video</div><div class="prov-desc">AnimateDiff / ModelScope</div></div>
-                    <span class="prov-badge key">KEY</span>
-                </div>
-                <div class="prov-card" onclick="setProv(this,'replicate')" data-p="replicate">
-                    <div class="prov-ico" style="background:linear-gradient(135deg,#3b82f6,#7c3aed)">🔄</div>
-                    <div class="prov-info"><div class="prov-name">Replicate</div><div class="prov-desc">Stable Video Diffusion / Wan2.1</div></div>
-                    <span class="prov-badge key">KEY</span>
-                </div>
-                <div class="prov-card" onclick="setProv(this,'fal')" data-p="fal">
-                    <div class="prov-ico" style="background:linear-gradient(135deg,#ec4899,#a855f7)">⚡</div>
-                    <div class="prov-info"><div class="prov-name">FAL.ai</div><div class="prov-desc">Kling / Minimax / Wan</div></div>
-                    <span class="prov-badge key">KEY</span>
-                </div>
-                <div class="prov-card" onclick="setProv(this,'pollinations')" data-p="pollinations">
-                    <div class="prov-ico" style="background:linear-gradient(135deg,#a855f7,#ec4899)">🌸</div>
-                    <div class="prov-info"><div class="prov-name">Pollinations</div><div class="prov-desc">Free image → animated video</div></div>
-                    <span class="prov-badge free">FREE</span>
-                </div>
-            </div>
-
-            <!-- DURATION -->
-            <div class="sec">
-                <div class="sec-t"><i class="fas fa-clock"></i> Duration & Format</div>
-                <div class="ctrl">
-                    <div class="ctrl-l">Duration <span class="ctrl-v" id="durV">5 sec</span></div>
-                    <input type="range" id="durS" min="2" max="16" value="5" step="1" oninput="updDur()">
-                </div>
-                <div class="ctrl">
-                    <div class="ctrl-l">Aspect Ratio</div>
-                    <div class="og c3">
-                        <button class="ob on" onclick="setR(this,'16:9')"><span class="oi">🖥️</span>16:9</button>
-                        <button class="ob" onclick="setR(this,'9:16')"><span class="oi">📱</span>9:16</button>
-                        <button class="ob" onclick="setR(this,'1:1')"><span class="oi">⬜</span>1:1</button>
-                    </div>
-                </div>
-                <div class="dur-info">
-                    <div class="di-i">🎬</div>
-                    <div>
-                        <div class="di-t" id="durInfo">5s video</div>
-                        <div class="di-d" id="durDetail">Provider will generate actual motion</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MOTION -->
-            <div class="sec">
-                <div class="sec-t"><i class="fas fa-route"></i> Camera Motion (prompt hint)</div>
-                <div class="mg">
-                    <button class="mb on" onclick="setM(this,'none')">⊙<span class="ml">None</span></button>
-                    <button class="mb" onclick="setM(this,'pan-left')">←<span class="ml">Pan L</span></button>
-                    <button class="mb" onclick="setM(this,'pan-right')">→<span class="ml">Pan R</span></button>
-                    <button class="mb" onclick="setM(this,'tilt-up')">↑<span class="ml">Tilt Up</span></button>
-                    <button class="mb" onclick="setM(this,'tilt-down')">↓<span class="ml">Tilt Down</span></button>
-                    <button class="mb" onclick="setM(this,'zoom-in')">⊕<span class="ml">Zoom In</span></button>
-                    <button class="mb" onclick="setM(this,'zoom-out')">⊖<span class="ml">Zoom Out</span></button>
-                    <button class="mb" onclick="setM(this,'orbit')">↻<span class="ml">Orbit</span></button>
-                    <button class="mb" onclick="setM(this,'dolly')">⇡<span class="ml">Dolly</span></button>
-                </div>
-            </div>
-
-            <!-- STYLE -->
-            <div class="sec">
-                <div class="sec-t"><i class="fas fa-palette"></i> Style</div>
-                <div class="og c3">
-                    <button class="ob on" onclick="setSt(this,'realistic')"><span class="oi">📸</span>Realistic</button>
-                    <button class="ob" onclick="setSt(this,'cinematic')"><span class="oi">🎬</span>Cinema</button>
-                    <button class="ob" onclick="setSt(this,'anime')"><span class="oi">🎨</span>Anime</button>
-                    <button class="ob" onclick="setSt(this,'3d')"><span class="oi">🧊</span>3D</button>
-                    <button class="ob" onclick="setSt(this,'fantasy')"><span class="oi">🧙</span>Fantasy</button>
-                    <button class="ob" onclick="setSt(this,'scifi')"><span class="oi">🚀</span>Sci-Fi</button>
-                </div>
-            </div>
-
-            <!-- SEED -->
-            <div class="sec">
-                <div class="sec-t"><i class="fas fa-cog"></i> Advanced</div>
-                <div class="ctrl">
-                    <div class="ctrl-l">Seed</div>
-                    <div style="display:flex;gap:5px">
-                        <input type="number" class="tinput" id="seedIn" placeholder="Random" style="flex:1">
-                        <button class="chip" onclick="document.getElementById('seedIn').value=Math.floor(Math.random()*999999)" style="padding:6px 10px">🎲</button>
-                    </div>
-                </div>
-                <div class="ctrl">
-                    <div class="ctrl-l">Guidance <span class="ctrl-v" id="cfgV">7</span></div>
-                    <input type="range" id="cfgS" min="1" max="20" value="7" step=".5" oninput="document.getElementById('cfgV').textContent=this.value">
-                </div>
-            </div>
-
-            <div class="gen-wrap">
-                <button class="gen-btn" id="genBtn" onclick="generate()"><i class="fas fa-play"></i> Generate Video</button>
-                <div class="gen-inf" id="genInf">🎥 Using PiAPI — Real AI video generation</div>
-            </div>
-        </aside>
-
-        <!-- PREVIEW -->
-        <main class="prev">
-            <div class="prev-bar">
-                <div class="prev-tabs">
-                    <button class="ptab on">Preview</button>
-                </div>
-                <div class="ptools">
-                    <button class="tbtn" onclick="toggleFS()" title="Fullscreen"><i class="fas fa-expand"></i></button>
-                </div>
-            </div>
-            <div class="canvas-area">
-                <div class="vframe" id="vframe">
-                    <div class="placeholder" id="ph">
-                        <div class="pi"><i class="fas fa-film"></i></div>
-                        <h3>AI Video Studio Pro</h3>
-                        <p>Write a prompt, choose a provider and duration, then Generate to create a real AI-animated video.</p>
-                    </div>
-                    <video id="resultVideo" playsinline></video>
-                    <img id="resultImg" alt="">
-                    <div class="gen-ov" id="overlay">
-                        <div class="spinner"></div>
-                        <div class="gs" id="gS">Initializing...</div>
-                        <div class="gss" id="gSS">Connecting</div>
-                        <div class="gbar"><div class="gfill" id="gF"></div></div>
-                        <div class="gsteps">
-                            <div class="gst" id="s1"><i class="fas fa-circle"></i> Sending prompt to AI</div>
-                            <div class="gst" id="s2"><i class="fas fa-circle"></i> AI generating video</div>
-                            <div class="gst" id="s3"><i class="fas fa-circle"></i> Downloading result</div>
-                            <div class="gst" id="s4"><i class="fas fa-circle"></i> Processing output</div>
-                        </div>
-                    </div>
-                    <div class="vc" id="vc">
-                        <button class="vcb" onclick="ppV()"><i class="fas fa-play" id="ppI"></i></button>
-                        <div class="vtl" onclick="seekV(event)"><div class="vtl-f" id="tlF"></div></div>
-                        <span class="vtm" id="vTm">0:00/0:00</span>
-                        <button class="vcb" onclick="loopV()"><i class="fas fa-redo" id="lpI" style="opacity:.4"></i></button>
-                        <button class="vcb" onclick="toggleFS()"><i class="fas fa-expand"></i></button>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- LOG PANEL -->
-        <aside class="logp" id="logPanel">
-            <div class="sec"><div class="sec-t"><i class="fas fa-terminal"></i> Generation Log</div></div>
-            <div id="logList"></div>
-        </aside>
+  <!-- PROMPT -->
+  <div class="sec">
+    <div class="sec-t"><i class="fas fa-pen-fancy"></i> Prompt Vidéo</div>
+    <textarea class="prompt-ta" id="prompt"
+      placeholder="Décrivez votre vidéo avec détails...&#10;&#10;Ex: Un dragon doré survole un château médiéval au coucher du soleil, plan aérien cinématographique, nuages volumétriques, lumière dramatique"></textarea>
+    <div class="chips">
+      <button class="chip" onclick="ac('cinematic 4K, dramatic lighting, smooth camera')">🎬 Cinéma</button>
+      <button class="chip" onclick="ac('slow motion, ultra smooth motion blur')">🐌 Slow-mo</button>
+      <button class="chip" onclick="ac('aerial drone shot, sweeping landscape')">🚁 Aérien</button>
+      <button class="chip" onclick="ac('golden hour, warm sunlight, lens flare')">🌅 Golden</button>
+      <button class="chip" onclick="ac('time-lapse, fast motion, clouds moving')">⏩ Timelapse</button>
+      <button class="chip" onclick="ac('underwater, caustic light rays, bubbles')">🌊 Aqua</button>
+      <button class="chip" onclick="ac('macro shot, extreme close-up, details')">🔬 Macro</button>
+      <button class="chip" onclick="ac('hyperrealistic, photorealistic, 8K ultra detailed')">✨ Ultra HD</button>
     </div>
+  </div>
+
+  <!-- NEGATIVE -->
+  <div class="sec">
+    <div class="sec-t"><i class="fas fa-ban"></i> Prompt Négatif</div>
+    <textarea class="neg-ta" id="negP">static, no motion, blurry, low quality, distorted, watermark, text overlay, ugly</textarea>
+  </div>
+
+  <!-- MODEL SELECTION -->
+  <div class="sec">
+    <div class="sec-t"><i class="fas fa-robot"></i> Modèle IA — FAL.ai</div>
+
+    <div class="mcard on" onclick="setModel(this,'kling-1.6')" data-m="kling-1.6">
+      <div class="mc-ico" style="background:linear-gradient(135deg,#7c3aed,#ec4899)">⚡</div>
+      <div class="mc-info">
+        <div class="mc-name">Kling 1.6 Standard</div>
+        <div class="mc-desc">Mouvement naturel réaliste • 5-10s</div>
+      </div>
+      <span class="mc-badge hq">HQ</span>
+    </div>
+
+    <div class="mcard" onclick="setModel(this,'kling-1.6-pro')" data-m="kling-1.6-pro">
+      <div class="mc-ico" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">👑</div>
+      <div class="mc-info">
+        <div class="mc-name">Kling 1.6 Pro</div>
+        <div class="mc-desc">Meilleure qualité • Plus lent</div>
+      </div>
+      <span class="mc-badge hq">PRO</span>
+    </div>
+
+    <div class="mcard" onclick="setModel(this,'minimax')" data-m="minimax">
+      <div class="mc-ico" style="background:linear-gradient(135deg,#3b82f6,#06b6d4)">🎭</div>
+      <div class="mc-info">
+        <div class="mc-name">Minimax Video-01</div>
+        <div class="mc-desc">Haute qualité • Mouvement fluide</div>
+      </div>
+      <span class="mc-badge hq">HQ</span>
+    </div>
+
+    <div class="mcard" onclick="setModel(this,'wan-1.3b')" data-m="wan-1.3b">
+      <div class="mc-ico" style="background:linear-gradient(135deg,#10b981,#3b82f6)">🌊</div>
+      <div class="mc-info">
+        <div class="mc-name">Wan 2.1 — 1.3B</div>
+        <div class="mc-desc">Open source • Rapide • 480p</div>
+      </div>
+      <span class="mc-badge fast">FAST</span>
+    </div>
+
+    <div class="mcard" onclick="setModel(this,'wan-14b')" data-m="wan-14b">
+      <div class="mc-ico" style="background:linear-gradient(135deg,#06b6d4,#10b981)">🌊</div>
+      <div class="mc-info">
+        <div class="mc-name">Wan 2.1 — 14B</div>
+        <div class="mc-desc">Open source • Haute qualité • 720p</div>
+      </div>
+      <span class="mc-badge hq">HQ</span>
+    </div>
+
+    <div class="mcard" onclick="setModel(this,'luma')" data-m="luma">
+      <div class="mc-ico" style="background:linear-gradient(135deg,#a855f7,#3b82f6)">🎬</div>
+      <div class="mc-info">
+        <div class="mc-name">Luma Dream Machine</div>
+        <div class="mc-desc">Cinématique • Très fluide</div>
+      </div>
+      <span class="mc-badge fast">FAST</span>
+    </div>
+  </div>
+
+  <!-- DURATION & FORMAT -->
+  <div class="sec">
+    <div class="sec-t"><i class="fas fa-clock"></i> Durée & Format</div>
+    <div class="ctrl">
+      <div class="ctrl-l">Durée <span class="ctrl-v" id="durV">5 secondes</span></div>
+      <input type="range" id="durS" min="2" max="10" value="5" step="1" oninput="updateDur()">
+    </div>
+    <div class="ctrl">
+      <div class="ctrl-l">Format</div>
+      <div class="og c3">
+        <button class="ob on" onclick="setRatio(this,'16:9')"><span class="oi">🖥️</span>16:9</button>
+        <button class="ob" onclick="setRatio(this,'9:16')"><span class="oi">📱</span>9:16</button>
+        <button class="ob" onclick="setRatio(this,'1:1')"><span class="oi">⬜</span>1:1</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAMERA MOTION -->
+  <div class="sec">
+    <div class="sec-t"><i class="fas fa-video"></i> Mouvement Caméra</div>
+    <div class="og c3">
+      <button class="ob on" onclick="setMot(this,'')"><span class="oi">🎯</span>Libre</button>
+      <button class="ob" onclick="setMot(this,', camera panning left smoothly')"><span class="oi">←</span>Pan G</button>
+      <button class="ob" onclick="setMot(this,', camera panning right smoothly')"><span class="oi">→</span>Pan D</button>
+      <button class="ob" onclick="setMot(this,', camera slowly zooming in, push in')"><span class="oi">⊕</span>Zoom+</button>
+      <button class="ob" onclick="setMot(this,', camera slowly zooming out, pull back')"><span class="oi">⊖</span>Zoom-</button>
+      <button class="ob" onclick="setMot(this,', camera tilting upward slowly')"><span class="oi">↑</span>Tilt</button>
+      <button class="ob" onclick="setMot(this,', aerial drone descending shot from above')"><span class="oi">🚁</span>Drone</button>
+      <button class="ob" onclick="setMot(this,', orbit camera rotation around subject 360°')"><span class="oi">↻</span>Orbit</button>
+      <button class="ob" onclick="setMot(this,', tracking shot following subject, dolly')"><span class="oi">🎥</span>Track</button>
+    </div>
+  </div>
+
+  <!-- STYLE -->
+  <div class="sec">
+    <div class="sec-t"><i class="fas fa-palette"></i> Style Visuel</div>
+    <div class="og c3">
+      <button class="ob on" onclick="setSty(this,'photorealistic, natural lighting, ultra detailed')"><span class="oi">📸</span>Réaliste</button>
+      <button class="ob" onclick="setSty(this,'cinematic film, anamorphic lens, color graded, film grain')"><span class="oi">🎬</span>Cinéma</button>
+      <button class="ob" onclick="setSty(this,'anime style, vibrant colors, cel shading, Studio Ghibli')"><span class="oi">🎨</span>Anime</button>
+      <button class="ob" onclick="setSty(this,'3D render, Unreal Engine 5, ray tracing, octane')"><span class="oi">🧊</span>3D CGI</button>
+      <button class="ob" onclick="setSty(this,'epic fantasy art, magical, ethereal glow, mythical')"><span class="oi">🧙</span>Fantasy</button>
+      <button class="ob" onclick="setSty(this,'sci-fi, cyberpunk, neon lights, futuristic holographic')"><span class="oi">🚀</span>Sci-Fi</button>
+    </div>
+  </div>
+
+  <!-- ADVANCED -->
+  <div class="sec">
+    <div class="sec-t"><i class="fas fa-cog"></i> Paramètres</div>
+    <div class="ctrl">
+      <div class="ctrl-l">Guidance Scale <span class="ctrl-v" id="cfgV">7.5</span></div>
+      <input type="range" id="cfgS" min="1" max="20" value="7.5" step=".5"
+        oninput="document.getElementById('cfgV').textContent=this.value">
+    </div>
+    <div class="ctrl">
+      <div class="ctrl-l">Seed (optionnel)</div>
+      <div style="display:flex;gap:5px">
+        <input type="number" class="inp" id="seedIn" placeholder="Aléatoire" style="flex:1">
+        <button class="chip" onclick="document.getElementById('seedIn').value=''" style="padding:6px 10px">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUDIO -->
+  <div class="sec">
+    <div class="sec-t"><i class="fas fa-music"></i> Ambiance Sonore</div>
+    <div class="ctrl">
+      <select id="audioType">
+        <option value="none">Aucun son</option>
+        <option value="cinematic">Cinématographique</option>
+        <option value="ambient">Ambiance naturelle</option>
+        <option value="action">Action / Épique</option>
+        <option value="dramatic">Dramatique</option>
+        <option value="peaceful">Paisible</option>
+        <option value="mystery">Mystérieux</option>
+        <option value="scifi">Science-Fiction</option>
+      </select>
+    </div>
+    <div class="ctrl">
+      <div class="ctrl-l">Volume <span class="ctrl-v" id="volV">75%</span></div>
+      <input type="range" id="volS" min="0" max="100" value="75" step="5"
+        oninput="document.getElementById('volV').textContent=this.value+'%';updateVolume()">
+    </div>
+    <canvas class="audio-viz" id="audioViz" height="38"></canvas>
+  </div>
+
+  <div class="gen-wrap">
+    <button class="gen-btn" id="genBtn" onclick="generate()">
+      <i class="fas fa-play"></i> Générer la Vidéo
+    </button>
+    <div class="gen-note" id="genNote">⚡ Kling 1.6 Standard via FAL.ai · Clé configurée</div>
+  </div>
+</aside>
+
+<!-- PREVIEW -->
+<main class="prev">
+  <div class="prev-bar">
+    <div class="prev-info" id="prevInfo">Aucune vidéo générée · Entrez un prompt et cliquez Générer</div>
+    <div class="prev-tools">
+      <button class="tbtn" onclick="toggleFS()" title="Plein écran"><i class="fas fa-expand"></i></button>
+    </div>
+  </div>
+  <div class="canvas-area">
+    <div class="vframe r169" id="vframe">
+
+      <div class="ph" id="ph">
+        <div class="ph-icon"><i class="fas fa-film"></i></div>
+        <h3>VideoGen AI Studio</h3>
+        <p>Décrivez votre vidéo, choisissez un modèle et cliquez <strong>Générer</strong> pour créer une vraie vidéo IA avec mouvement réel.</p>
+        <div class="api-ok"><i class="fas fa-check-circle"></i> FAL.ai connecté · Kling 1.6, Minimax, Wan 2.1 disponibles</div>
+      </div>
+
+      <video id="vid" playsinline></video>
+
+      <!-- GENERATION OVERLAY -->
+      <div class="ov" id="ov">
+        <div class="spin"></div>
+        <div class="ov-s" id="ovS">Initialisation...</div>
+        <div class="ov-ss" id="ovSS">Connexion à FAL.ai</div>
+        <div class="ov-bar"><div class="ov-fill" id="ovF"></div></div>
+        <div class="ov-steps">
+          <div class="ov-step" id="os1"><i class="fas fa-circle"></i> Envoi du prompt au modèle</div>
+          <div class="ov-step" id="os2"><i class="fas fa-circle"></i> Génération vidéo IA en cours</div>
+          <div class="ov-step" id="os3"><i class="fas fa-circle"></i> Téléchargement de la vidéo</div>
+          <div class="ov-step" id="os4"><i class="fas fa-circle"></i> Ajout de la bande son</div>
+        </div>
+        <div class="ov-eta" id="ovEta">Durée estimée: calcul...</div>
+        <button class="ov-cancel" onclick="doCancel()"><i class="fas fa-times"></i> Annuler</button>
+      </div>
+
+      <!-- VIDEO CONTROLS -->
+      <div class="vc" id="vc">
+        <button class="vcb" onclick="ppV()"><i class="fas fa-pause" id="ppI"></i></button>
+        <div class="vtl" id="vtl" onclick="seekV(event)">
+          <div class="vtl-f" id="vtlF"></div>
+        </div>
+        <span class="vtm" id="vtm">0:00 / 0:00</span>
+        <button class="vcb" onclick="muteV()" id="muteB" title="Mute"><i class="fas fa-volume-up"></i></button>
+        <button class="vcb" onclick="loopV()" title="Loop"><i class="fas fa-redo" id="lpI" style="opacity:.4"></i></button>
+        <button class="vcb" onclick="toggleFS()"><i class="fas fa-expand"></i></button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- LOG PANEL -->
+<aside class="rp">
+  <div class="sec"><div class="sec-t"><i class="fas fa-terminal"></i> Journal FAL.ai</div></div>
+  <div id="logList"></div>
+</aside>
+</div>
 </div>
 
 <script>
-// ===========================================================
+// ═══════════════════════════════════════════════════════════
+// CONFIGURATION — FAL.ai Key pré-configurée
+// ═══════════════════════════════════════════════════════════
+const FAL_KEY = '13939971-5374-47e4-80ac-fdd9a0fffa51:7564821e80d14b770109633f18bb223b';
+
+// FAL.ai model endpoints mapping
+const FAL_MODELS = {
+  'kling-1.6': {
+    endpoint: 'fal-ai/kling-video/v1.6/standard/text-to-video',
+    name: 'Kling 1.6 Standard',
+    eta: '1-2 min',
+    maxDur: 10,
+    buildBody: (p,neg,dur,ratio,cfg) => ({
+      prompt: p,
+      negative_prompt: neg,
+      duration: dur <= 5 ? '5' : '10',
+      aspect_ratio: ratio,
+      cfg_scale: cfg
+    })
+  },
+  'kling-1.6-pro': {
+    endpoint: 'fal-ai/kling-video/v1.6/pro/text-to-video',
+    name: 'Kling 1.6 Pro',
+    eta: '2-4 min',
+    maxDur: 10,
+    buildBody: (p,neg,dur,ratio,cfg) => ({
+      prompt: p,
+      negative_prompt: neg,
+      duration: dur <= 5 ? '5' : '10',
+      aspect_ratio: ratio,
+      cfg_scale: cfg
+    })
+  },
+  'minimax': {
+    endpoint: 'fal-ai/minimax/video-01',
+    name: 'Minimax Video-01',
+    eta: '2-4 min',
+    maxDur: 6,
+    buildBody: (p,neg,dur,ratio,cfg) => ({
+      prompt: p,
+      prompt_optimizer: true
+    })
+  },
+  'wan-1.3b': {
+    endpoint: 'fal-ai/wan/v2.1/1.3b/text-to-video',
+    name: 'Wan 2.1 — 1.3B',
+    eta: '1-3 min',
+    maxDur: 8,
+    buildBody: (p,neg,dur,ratio,cfg) => ({
+      prompt: p,
+      negative_prompt: neg,
+      num_frames: Math.min(dur * 16, 81),
+      resolution: '480p',
+      guidance_scale: cfg
+    })
+  },
+  'wan-14b': {
+    endpoint: 'fal-ai/wan/v2.1/14b/text-to-video',
+    name: 'Wan 2.1 — 14B',
+    eta: '3-6 min',
+    maxDur: 8,
+    buildBody: (p,neg,dur,ratio,cfg) => ({
+      prompt: p,
+      negative_prompt: neg,
+      num_frames: Math.min(dur * 16, 81),
+      resolution: '720p',
+      guidance_scale: cfg
+    })
+  },
+  'luma': {
+    endpoint: 'fal-ai/luma-dream-machine',
+    name: 'Luma Dream Machine',
+    eta: '1-2 min',
+    maxDur: 5,
+    buildBody: (p,neg,dur,ratio,cfg) => ({
+      prompt: p,
+      aspect_ratio: ratio
+    })
+  }
+};
+
+// ═══════════════════════════════════════════════════════════
 // STATE
-// ===========================================================
-const S = {
-    provider: 'piapi',
-    style: 'realistic',
-    ratio: '16:9',
-    motion: 'none',
-    generating: false,
-    looping: false,
-    keys: { hf:'', replicate:'', fal:'' },
-    resultUrl: null,
-    resultBlob: null
+// ═══════════════════════════════════════════════════════════
+const ST = {
+  model: 'kling-1.6',
+  ratio: '16:9',
+  motHint: '',
+  styleSuffix: 'photorealistic, natural lighting, ultra detailed',
+  looping: false,
+  generating: false,
+  cancelled: false,
+  resultBlob: null,
+  resultUrl: null,
+  audioCtx: null,
+  audioNodes: [],
+  audioGain: null,
+  analyser: null,
+  vizId: null
 };
 
-const STYLES = {
-    realistic:'photorealistic, ultra detailed, natural lighting',
-    cinematic:'cinematic, anamorphic lens, film grain, dramatic lighting, color graded',
-    anime:'anime style, cel shaded, vibrant colors, Studio Ghibli',
-    '3d':'3D render, Unreal Engine 5, ray tracing, octane render',
-    fantasy:'epic fantasy, magical, ethereal glow, mythical',
-    scifi:'sci-fi, futuristic, neon, cyberpunk, holographic'
-};
-const MOTIONS = {
-    none:'',
-    'pan-left':', camera smoothly panning left',
-    'pan-right':', camera smoothly panning right',
-    'tilt-up':', camera tilting upward',
-    'tilt-down':', camera tilting downward',
-    'zoom-in':', camera slowly zooming in',
-    'zoom-out':', camera slowly zooming out',
-    'orbit':', camera orbiting around the subject',
-    'dolly':', camera dolly shot moving forward'
-};
-
-// ===========================================================
+// ═══════════════════════════════════════════════════════════
 // INIT
-// ===========================================================
-document.addEventListener('DOMContentLoaded',()=>{
-    const k=localStorage.getItem('vgs_keys');
-    if(k){S.keys=JSON.parse(k);document.getElementById('kHF').value=S.keys.hf||'';document.getElementById('kReplicate').value=S.keys.replicate||'';document.getElementById('kFal').value=S.keys.fal||'';}
-    updDur();
-    log('System ready. Choose a provider and enter a prompt.','info');
+// ═══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  log('✅ FAL.ai connecté · Clé pré-configurée', 'ok');
+  log('Modèles disponibles: Kling 1.6, Kling Pro, Minimax, Wan 2.1, Luma', 'info');
+  log('⚠️ Régénérez votre clé sur fal.ai/dashboard/keys', 'warn');
+  updateDur();
+  // Resize viz canvas
+  setTimeout(() => {
+    const viz = document.getElementById('audioViz');
+    viz.width = viz.parentElement.clientWidth - 32;
+  }, 100);
 });
 
-// ===========================================================
-// UI
-// ===========================================================
-function toast(m,t='inf'){const c=document.getElementById('toasts');const e=document.createElement('div');e.className=`toast ${t}`;const ic={ok:'check-circle',err:'exclamation-circle',inf:'info-circle'};e.innerHTML=`<i class="fas fa-${ic[t]}"></i><span>${m}</span>`;c.appendChild(e);setTimeout(()=>e.remove(),4000)}
-function log(msg,type='info'){const l=document.getElementById('logList');const d=document.createElement('div');d.className=`log-entry ${type}`;const now=new Date().toLocaleTimeString();d.innerHTML=`<span class="ts">[${now}]</span> ${msg}`;l.prepend(d);if(l.children.length>100)l.lastChild.remove()}
-function saveKeys(){S.keys.hf=document.getElementById('kHF').value.trim();S.keys.replicate=document.getElementById('kReplicate').value.trim();S.keys.fal=document.getElementById('kFal').value.trim();localStorage.setItem('vgs_keys',JSON.stringify(S.keys));document.getElementById('apiModal').classList.remove('on');toast('Keys saved!','ok');log('API keys saved','ok')}
-function addC(t){const p=document.getElementById('prompt');p.value=p.value.trim()?p.value.trim()+', '+t:t}
-function setR(b,r){document.querySelectorAll('.og.c3 .ob').forEach(x=>x.classList.remove('on'));b.classList.add('on');S.ratio=r;const f=document.getElementById('vframe');f.classList.remove('r916','r11');if(r==='9:16')f.classList.add('r916');if(r==='1:1')f.classList.add('r11')}
-function setM(b,m){document.querySelectorAll('.mb').forEach(x=>x.classList.remove('on'));b.classList.add('on');S.motion=m}
-function setSt(b,s){b.parentElement.querySelectorAll('.ob').forEach(x=>x.classList.remove('on'));b.classList.add('on');S.style=s}
-function setProv(c,p){document.querySelectorAll('.prov-card').forEach(x=>x.classList.remove('on'));c.classList.add('on');S.provider=p;const n=c.querySelector('.prov-name').textContent;document.getElementById('genInf').textContent='🎥 Using '+n;log('Provider: '+n,'info');toast('Provider: '+n,'inf')}
-function updDur(){const d=document.getElementById('durS').value;document.getElementById('durV').textContent=d+' sec';document.getElementById('durInfo').textContent=d+'s video';document.getElementById('durDetail').textContent='Real AI video with motion & animation'}
-function setStatus(s){const d=document.getElementById('stDot'),t=document.getElementById('stTxt');d.className='st-dot';if(s==='busy'){d.classList.add('busy');t.textContent='Generating...';}else if(s==='err'){d.classList.add('err');t.textContent='Error';}else if(s==='ok'){t.textContent='Done';}else{t.textContent='Ready';}}
+// ═══════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// Overlay
-function showOv(){document.getElementById('overlay').classList.add('on');document.getElementById('ph').style.display='none';for(let i=1;i<=4;i++){const s=document.getElementById('s'+i);s.className='gst';s.querySelector('i').className='fas fa-circle'}}
-function hideOv(){document.getElementById('overlay').classList.remove('on')}
-function sAct(n){const s=document.getElementById('s'+n);s.className='gst act';s.querySelector('i').className='fas fa-spinner fa-spin'}
-function sOk(n){const s=document.getElementById('s'+n);s.className='gst ok';s.querySelector('i').className='fas fa-check-circle'}
-function gS(t,sub){document.getElementById('gS').textContent=t;document.getElementById('gSS').textContent=sub}
-function gP(p){document.getElementById('gF').style.width=p+'%'}
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-
-// ===========================================================
-// BUILD FULL PROMPT
-// ===========================================================
-function buildPrompt(){
-    let p=document.getElementById('prompt').value.trim();
-    const sty=STYLES[S.style]||'';
-    const mot=MOTIONS[S.motion]||'';
-    return `${p}, ${sty}${mot}, high quality video, smooth motion, detailed animation`;
+function log(msg, type = 'info') {
+  const l = document.getElementById('logList');
+  const d = document.createElement('div');
+  d.className = 'log-entry ' + type;
+  const ts = new Date().toLocaleTimeString('fr-FR');
+  d.innerHTML = `<span class="ts">[${ts}]</span>${msg}`;
+  l.prepend(d);
+  if (l.children.length > 200) l.lastChild.remove();
 }
 
-// ===========================================================
+function toast(m, t = 'inf') {
+  const c = document.getElementById('toasts');
+  const e = document.createElement('div');
+  e.className = 'toast ' + t;
+  const ic = { ok: 'check-circle', err: 'exclamation-circle', inf: 'info-circle', warn: 'exclamation-triangle' };
+  e.innerHTML = `<i class="fas fa-${ic[t] || 'info-circle'}"></i><span>${m}</span>`;
+  c.appendChild(e);
+  setTimeout(() => e.remove(), 4500);
+}
+
+function setStatus(s) {
+  const d = document.getElementById('stDot');
+  const t = document.getElementById('stTxt');
+  d.className = 'dot';
+  if (s === 'busy') { d.classList.add('busy'); t.textContent = 'Génération en cours...'; }
+  else if (s === 'err') { d.classList.add('err'); t.textContent = 'Erreur'; }
+  else if (s === 'ok') { t.textContent = 'Terminé · FAL.ai'; }
+  else { t.textContent = 'Prêt · FAL.ai connecté'; }
+}
+
+function ac(t) {
+  const p = document.getElementById('prompt');
+  p.value = (p.value.trim() ? p.value.trim() + ', ' : '') + t;
+}
+
+function setRatio(b, r) {
+  document.querySelectorAll('.og.c3 .ob').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  ST.ratio = r;
+  const f = document.getElementById('vframe');
+  f.className = 'vframe ' + (r === '9:16' ? 'r916' : r === '1:1' ? 'r11' : 'r169');
+}
+
+function setMot(b, m) {
+  b.parentElement.querySelectorAll('.ob').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  ST.motHint = m;
+}
+
+function setSty(b, s) {
+  b.parentElement.querySelectorAll('.ob').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  ST.styleSuffix = s;
+}
+
+function setModel(c, m) {
+  document.querySelectorAll('.mcard').forEach(x => x.classList.remove('on'));
+  c.classList.add('on');
+  ST.model = m;
+  const info = FAL_MODELS[m];
+  document.getElementById('genNote').textContent = `⚡ ${info.name} · ETA: ${info.eta}`;
+  log('Modèle sélectionné: ' + info.name, 'info');
+  // Update duration max
+  document.getElementById('durS').max = info.maxDur;
+  if (parseInt(document.getElementById('durS').value) > info.maxDur) {
+    document.getElementById('durS').value = info.maxDur;
+    updateDur();
+  }
+}
+
+function updateDur() {
+  const d = document.getElementById('durS').value;
+  document.getElementById('durV').textContent = d + ' secondes';
+}
+
+function updateVolume() {
+  const v = document.getElementById('vid');
+  if (v) v.volume = document.getElementById('volS').value / 100;
+  if (ST.audioGain) ST.audioGain.gain.value = document.getElementById('volS').value / 100 * 0.6;
+}
+
+// ═══════════════════════════════════════════════════════════
+// OVERLAY
+// ═══════════════════════════════════════════════════════════
+function showOv() {
+  document.getElementById('ov').classList.add('on');
+  document.getElementById('ph').style.display = 'none';
+  document.getElementById('vid').style.display = 'none';
+  document.getElementById('vc').classList.remove('on');
+  for (let i = 1; i <= 4; i++) {
+    const s = document.getElementById('os' + i);
+    s.className = 'ov-step';
+    s.querySelector('i').className = 'fas fa-circle';
+  }
+}
+function hideOv() { document.getElementById('ov').classList.remove('on'); }
+function sAct(n) { const s = document.getElementById('os' + n); s.className = 'ov-step act'; s.querySelector('i').className = 'fas fa-spinner fa-spin'; }
+function sOk(n) { const s = document.getElementById('os' + n); s.className = 'ov-step ok'; s.querySelector('i').className = 'fas fa-check-circle'; }
+function oStat(t, s) { document.getElementById('ovS').textContent = t; document.getElementById('ovSS').textContent = s; }
+function oFill(p) { document.getElementById('ovF').style.width = p + '%'; }
+function oEta(t) { document.getElementById('ovEta').textContent = t; }
+
+// ═══════════════════════════════════════════════════════════
+// BUILD PROMPT
+// ═══════════════════════════════════════════════════════════
+function buildPrompt() {
+  const raw = document.getElementById('prompt').value.trim();
+  const parts = [raw, ST.styleSuffix];
+  if (ST.motHint) parts.push(ST.motHint.replace(/^,\s*/, ''));
+  parts.push('high quality video, smooth motion, fluid animation, masterpiece');
+  return parts.filter(Boolean).join(', ');
+}
+
+// ═══════════════════════════════════════════════════════════
 // MAIN GENERATE
-// ===========================================================
-async function generate(){
-    const rawPrompt=document.getElementById('prompt').value.trim();
-    if(!rawPrompt){toast('Enter a prompt!','err');return}
-    if(S.generating)return;
-    S.generating=true;
-    const btn=document.getElementById('genBtn');
-    btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Generating...';
-    setStatus('busy');showOv();
-    log('Starting generation with provider: '+S.provider,'info');
-
-    try{
-        switch(S.provider){
-            case 'piapi': await genPiAPI(); break;
-            case 'hfvideo': await genHF(); break;
-            case 'replicate': await genReplicate(); break;
-            case 'fal': await genFal(); break;
-            case 'pollinations': await genPollinations(); break;
-            default: await genPiAPI();
-        }
-    }catch(e){
-        console.error(e);
-        log('ERROR: '+e.message,'err');
-        toast('Error: '+e.message,'err');
-        setStatus('err');
-        hideOv();
-    }
-    S.generating=false;
-    btn.disabled=false;
-    btn.innerHTML='<i class="fas fa-play"></i> Generate Video';
-}
-
-// ===========================================================
-// PIAPI.AI - Free video generation (Kling, Luma, Minimax)
-// ===========================================================
-async function genPiAPI(){
-    const prompt=buildPrompt();
-    const dur=parseInt(document.getElementById('durS').value);
-
-    sAct(1);gS('Sending to PiAPI...','Connecting to video AI');gP(10);
-    log('PiAPI: Sending prompt ('+dur+'s)','info');
-
-    // PiAPI free endpoint for video generation
-    // Using their text-to-video endpoint
-    const body = {
-        model: "kling",
-        task_type: "text2video",
-        input: {
-            prompt: prompt,
-            negative_prompt: document.getElementById('negPrompt').value,
-            duration: Math.min(dur, 10),
-            aspect_ratio: S.ratio === '16:9' ? '16:9' : S.ratio === '9:16' ? '9:16' : '1:1',
-            cfg_scale: parseFloat(document.getElementById('cfgS').value)
-        }
-    };
-
-    try {
-        // Try PiAPI
-        const resp = await fetch('https://api.piapi.ai/api/v1/task', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-
-        if (resp.ok) {
-            const data = await resp.json();
-            sOk(1); sAct(2);
-            gS('AI generating video...', 'This may take 1-3 minutes');
-            gP(30);
-            log('PiAPI: Task created, polling...', 'info');
-
-            // Poll for result
-            if (data.task_id) {
-                await pollPiAPI(data.task_id);
-                return;
-            }
-        }
-    } catch(e) {
-        log('PiAPI direct failed: ' + e.message + ', trying alternatives...', 'warn');
-    }
-
-    // Fallback: use Hugging Face video models or Pollinations
-    log('Falling back to alternative video generation...', 'warn');
-    await genVideoFallback(prompt, dur);
-}
-
-async function pollPiAPI(taskId) {
-    let attempts = 0;
-    const maxAttempts = 120;
-
-    while (attempts < maxAttempts) {
-        await sleep(3000);
-        attempts++;
-
-        try {
-            const resp = await fetch(`https://api.piapi.ai/api/v1/task/${taskId}`);
-            if (resp.ok) {
-                const data = await resp.json();
-                const progress = Math.min(30 + (attempts / maxAttempts) * 60, 90);
-                gP(progress);
-                gS('AI generating video...', `Processing... (${attempts * 3}s)`);
-
-                if (data.status === 'completed' && data.output?.video_url) {
-                    sOk(2); sAct(3);
-                    gS('Downloading video...', 'Almost done');
-                    gP(90);
-                    await displayVideoFromUrl(data.output.video_url);
-                    return;
-                }
-                if (data.status === 'failed') throw new Error('Generation failed');
-            }
-        } catch(e) {
-            if (e.message === 'Generation failed') throw e;
-        }
-    }
-    throw new Error('Timeout waiting for video');
-}
-
-// ===========================================================
-// HUGGING FACE - Video Diffusion Models
-// ===========================================================
-async function genHF(){
-    if(!S.keys.hf){toast('Set HuggingFace API key first','err');document.getElementById('apiModal').classList.add('on');hideOv();return}
-
-    const prompt=buildPrompt();
-    const dur=parseInt(document.getElementById('durS').value);
-
-    sAct(1);gS('Connecting to HuggingFace...','Loading video model');gP(10);
-    log('HF: Using video diffusion model','info');
-
-    // Try video generation models in order
-    const models = [
-        'ali-vilab/text-to-video-ms-1.7b',
-        'damo-vilab/text-to-video-ms-1.7b',
-        'cerspense/zeroscope_v2_576w'
-    ];
-
-    for (const model of models) {
-        log(`HF: Trying model ${model}...`, 'info');
-        gS('Generating with ' + model.split('/')[1], 'Sending prompt...');
-
-        try {
-            const resp = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${S.keys.hf}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    inputs: prompt,
-                    parameters: {
-                        num_frames: Math.min(dur * 8, 48),
-                        num_inference_steps: 25,
-                        guidance_scale: parseFloat(document.getElementById('cfgS').value)
-                    }
-                })
-            });
-
-            if (resp.status === 503) {
-                const info = await resp.json();
-                if (info.estimated_time) {
-                    log(`Model loading, wait ${Math.round(info.estimated_time)}s...`, 'warn');
-                    gS('Model loading...', `Estimated ${Math.round(info.estimated_time)}s`);
-                    await sleep(Math.min(info.estimated_time * 1000, 60000));
-                    // Retry
-                    const resp2 = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${S.keys.hf}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ inputs: prompt, parameters: { num_frames: Math.min(dur * 8, 48), num_inference_steps: 25 }})
-                    });
-                    if (resp2.ok) {
-                        sOk(1); sAct(2); gP(50);
-                        gS('Processing video...', 'Downloading');
-                        const blob = await resp2.blob();
-                        log(`HF: Got response (${(blob.size/1024/1024).toFixed(1)}MB)`, 'ok');
-
-                        if (blob.type.includes('video') || blob.size > 100000) {
-                            await displayVideoFromBlob(blob);
-                            return;
-                        }
-                    }
-                }
-                continue;
-            }
-
-            if (resp.ok) {
-                sOk(1); sAct(2); gP(50);
-                const blob = await resp.blob();
-                log(`HF: Success with ${model} (${(blob.size/1024/1024).toFixed(1)}MB)`, 'ok');
-
-                if (blob.type.includes('video') || blob.type.includes('mp4') || blob.size > 50000) {
-                    await displayVideoFromBlob(blob);
-                    return;
-                } else if (blob.type.includes('image')) {
-                    // Got an image, animate it
-                    log('HF returned image, creating animated version...', 'warn');
-                    await animateImage(blob, dur);
-                    return;
-                }
-            }
-
-            const errData = await resp.json().catch(() => ({}));
-            log(`HF model ${model}: ${errData.error || resp.status}`, 'warn');
-        } catch(e) {
-            log(`HF model ${model} failed: ${e.message}`, 'warn');
-        }
-    }
-
-    // Final fallback
-    log('HF video models unavailable, using fallback...', 'warn');
-    await genVideoFallback(prompt, dur);
-}
-
-// ===========================================================
-// REPLICATE - Stable Video Diffusion, Wan2.1
-// ===========================================================
-async function genReplicate(){
-    if(!S.keys.replicate){toast('Set Replicate API key first','err');document.getElementById('apiModal').classList.add('on');hideOv();return}
-
-    const prompt=buildPrompt();
-    const dur=parseInt(document.getElementById('durS').value);
-
-    sAct(1);gS('Sending to Replicate...','Starting Wan2.1 video model');gP(10);
-    log('Replicate: Submitting prediction','info');
-
-    // Use Wan2.1 or SVD
-    const models = [
-        { version: "wan-ai/wan2.1-t2v-14b", input: { prompt, num_frames: Math.min(dur*12, 81), guidance_scale: parseFloat(document.getElementById('cfgS').value) }},
-        { version: "stability-ai/stable-video-diffusion", input: { prompt, video_length: Math.min(dur, 4) }},
-        { version: "anotherjesse/zeroscope-v2-xl", input: { prompt, num_frames: Math.min(dur*12, 48) }}
-    ];
-
-    for (const model of models) {
-        try {
-            log(`Replicate: Trying ${model.version}...`, 'info');
-
-            const createResp = await fetch('https://api.replicate.com/v1/predictions', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Token ${S.keys.replicate}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    version: model.version,
-                    input: model.input
-                })
-            });
-
-            if (!createResp.ok) {
-                // Try with model endpoint instead
-                const createResp2 = await fetch(`https://api.replicate.com/v1/models/${model.version}/predictions`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${S.keys.replicate}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'wait'
-                    },
-                    body: JSON.stringify({ input: model.input })
-                });
-
-                if (!createResp2.ok) {
-                    const err = await createResp2.json().catch(()=>({}));
-                    log(`Replicate ${model.version}: ${err.detail || createResp2.status}`, 'warn');
-                    continue;
-                }
-
-                const result = await createResp2.json();
-                if (result.output) {
-                    const videoUrl = Array.isArray(result.output) ? result.output[0] : result.output;
-                    sOk(1); sAct(2); gP(80);
-                    await displayVideoFromUrl(videoUrl);
-                    return;
-                }
-                if (result.urls?.get) {
-                    sOk(1); sAct(2);
-                    await pollReplicate(result.urls.get, S.keys.replicate);
-                    return;
-                }
-                continue;
-            }
-
-            const pred = await createResp.json();
-            sOk(1); sAct(2);
-            gS('AI generating video...', 'This takes 1-5 minutes');
-            gP(25);
-            log('Replicate: Prediction '+pred.id+' created', 'ok');
-
-            // Poll
-            await pollReplicate(pred.urls.get, S.keys.replicate);
-            return;
-        } catch(e) {
-            log(`Replicate ${model.version} error: ${e.message}`, 'warn');
-        }
-    }
-
-    throw new Error('All Replicate models failed');
-}
-
-async function pollReplicate(url, key) {
-    let attempts = 0;
-    while (attempts < 150) {
-        await sleep(3000);
-        attempts++;
-        try {
-            const resp = await fetch(url, {
-                headers: { 'Authorization': `Token ${key}` }
-            });
-            const data = await resp.json();
-            const pct = Math.min(25 + attempts * 2, 90);
-            gP(pct);
-            gS('AI generating video...', `Status: ${data.status} (${attempts*3}s)`);
-            log(`Replicate poll: ${data.status}`, 'info');
-
-            if (data.status === 'succeeded') {
-                sOk(2); sAct(3); gP(90);
-                const videoUrl = Array.isArray(data.output) ? data.output[0] : data.output;
-                log('Replicate: Video ready!', 'ok');
-                await displayVideoFromUrl(videoUrl);
-                return;
-            }
-            if (data.status === 'failed' || data.status === 'canceled') {
-                throw new Error(data.error || 'Generation failed');
-            }
-        } catch(e) {
-            if (e.message.includes('failed') || e.message.includes('canceled')) throw e;
-        }
-    }
-    throw new Error('Replicate timeout');
-}
-
-// ===========================================================
-// FAL.AI - Kling, Minimax, Wan
-// ===========================================================
-async function genFal(){
-    if(!S.keys.fal){toast('Set FAL.ai key first','err');document.getElementById('apiModal').classList.add('on');hideOv();return}
-
-    const prompt=buildPrompt();
-    const dur=parseInt(document.getElementById('durS').value);
-
-    sAct(1);gS('Connecting to FAL.ai...','Starting video generation');gP(10);
-    log('FAL: Sending request','info');
-
-    const endpoints = [
-        { url: 'https://queue.fal.run/fal-ai/wan-t2v', body: { prompt, num_frames: Math.min(dur*12, 81), guidance_scale: parseFloat(document.getElementById('cfgS').value) }},
-        { url: 'https://queue.fal.run/fal-ai/minimax-video', body: { prompt, duration: Math.min(dur, 6) }},
-        { url: 'https://queue.fal.run/fal-ai/kling-video', body: { prompt, duration: Math.min(dur, 5) }}
-    ];
-
-    for (const ep of endpoints) {
-        try {
-            log(`FAL: Trying ${ep.url.split('/').pop()}...`, 'info');
-
-            const resp = await fetch(ep.url, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Key ${S.keys.fal}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(ep.body)
-            });
-
-            if (!resp.ok) {
-                const err = await resp.json().catch(()=>({}));
-                log(`FAL ${ep.url.split('/').pop()}: ${err.detail || resp.status}`, 'warn');
-                continue;
-            }
-
-            const data = await resp.json();
-            sOk(1); sAct(2);
-
-            // Check if queued
-            if (data.request_id) {
-                await pollFal(data.request_id, ep.url);
-                return;
-            }
-
-            // Direct result
-            if (data.video?.url || data.video_url) {
-                sOk(2); sAct(3); gP(90);
-                await displayVideoFromUrl(data.video?.url || data.video_url);
-                return;
-            }
-        } catch(e) {
-            log(`FAL error: ${e.message}`, 'warn');
-        }
-    }
-
-    throw new Error('All FAL models failed');
-}
-
-async function pollFal(requestId, baseUrl) {
-    let attempts = 0;
-    while (attempts < 120) {
-        await sleep(3000);
-        attempts++;
-
-        try {
-            const resp = await fetch(`${baseUrl}/requests/${requestId}/status`, {
-                headers: { 'Authorization': `Key ${S.keys.fal}` }
-            });
-            const data = await resp.json();
-            gP(Math.min(30 + attempts * 2, 90));
-            gS('AI generating video...', `${data.status || 'processing'} (${attempts*3}s)`);
-
-            if (data.status === 'COMPLETED') {
-                const resultResp = await fetch(`${baseUrl}/requests/${requestId}`, {
-                    headers: { 'Authorization': `Key ${S.keys.fal}` }
-                });
-                const result = await resultResp.json();
-                const videoUrl = result.video?.url || result.video_url;
-                if (videoUrl) {
-                    sOk(2); sAct(3); gP(90);
-                    await displayVideoFromUrl(videoUrl);
-                    return;
-                }
-            }
-            if (data.status === 'FAILED') throw new Error('FAL generation failed');
-        } catch(e) {
-            if (e.message.includes('failed')) throw e;
-        }
-    }
-}
-
-// ===========================================================
-// POLLINATIONS - Free animated video from images
-// ===========================================================
-async function genPollinations(){
-    const prompt=buildPrompt();
-    const dur=parseInt(document.getElementById('durS').value);
-
-    sAct(1);gS('Connecting to Pollinations...','Generating video frames');gP(10);
-    log('Pollinations: Generating high-quality frames for animation','info');
-
-    // Generate multiple variant frames with Pollinations
-    const numFrames = Math.max(8, dur * 3);
-    const seed = parseInt(document.getElementById('seedIn').value) || Math.floor(Math.random()*999999);
-    const [w, h] = getResolution();
-    const images = [];
-
-    sOk(1); sAct(2);
-
-    for (let i = 0; i < numFrames; i++) {
-        const progress = i / numFrames;
-        const motionHint = MOTIONS[S.motion] ? `, ${getTemporalHint(progress)}` : '';
-        const framePrompt = `${prompt}${motionHint}, frame ${i+1} of smooth continuous video`;
-        const frameSeed = seed + i * 3; // Small seed increment = similar but different frames
-
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(framePrompt)}?width=${w}&height=${h}&seed=${frameSeed}&nologo=true&model=flux`;
-
-        gS('Generating frames...', `Frame ${i+1}/${numFrames}`);
-        gP(15 + (i / numFrames) * 50);
-
-        try {
-            const resp = await fetch(url);
-            if (resp.ok) {
-                const blob = await resp.blob();
-                const burl = URL.createObjectURL(blob);
-                const img = await loadImg(burl);
-                images.push(img);
-                log(`Frame ${i+1}/${numFrames} generated`, 'ok');
-            }
-        } catch(e) {
-            log(`Frame ${i+1} failed, skipping`, 'warn');
-        }
-    }
-
-    if (images.length < 2) throw new Error('Not enough frames generated');
-
-    sOk(2); sAct(3);
-    gS('Rendering video...', `${images.length} frames → ${dur}s video`);
-    gP(70);
-    log(`Rendering ${images.length} frames into ${dur}s video`, 'info');
-
-    // Render with real frame interpolation and motion
-    const videoBlob = await renderSmoothVideo(images, dur, w, h);
-
-    sOk(3); sAct(4);
-    gS('Encoding...', 'Finalizing video');
-    gP(95);
-    await sleep(300);
-    sOk(4); gP(100);
-
-    await displayVideoFromBlob(videoBlob);
-    log('Pollinations video complete!', 'ok');
-}
-
-function getTemporalHint(progress) {
-    switch(S.motion) {
-        case 'pan-left': return `view panned ${Math.round(progress*100)}% to the left`;
-        case 'pan-right': return `view panned ${Math.round(progress*100)}% to the right`;
-        case 'tilt-up': return `camera tilted ${Math.round(progress*45)}° upward`;
-        case 'tilt-down': return `camera tilted ${Math.round(progress*45)}° downward`;
-        case 'zoom-in': return `close-up view, ${Math.round(50+progress*50)}% zoom`;
-        case 'zoom-out': return `wide angle view, ${Math.round(100-progress*50)}% zoom`;
-        case 'orbit': return `camera at ${Math.round(progress*360)}° orbit position`;
-        case 'dolly': return `camera moved ${Math.round(progress*100)}% closer`;
-        default: return '';
-    }
-}
-
-// ===========================================================
-// FALLBACK: Animated Image-based Video
-// ===========================================================
-async function genVideoFallback(prompt, dur) {
-    log('Using fallback: Pollinations frames + animation engine', 'warn');
-    sOk(1); sAct(2);
-    gS('Generating with Pollinations...', 'Creating animated frames');
-    gP(20);
-
-    const seed = parseInt(document.getElementById('seedIn').value) || Math.floor(Math.random()*999999);
-    const [w, h] = getResolution();
-    const numFrames = Math.max(6, dur * 2);
-    const images = [];
-
-    for (let i = 0; i < numFrames; i++) {
-        const motionHint = MOTIONS[S.motion] || '';
-        const framePrompt = `${prompt}${motionHint}, continuous motion frame ${i+1}`;
-        const frameSeed = seed + i * 5;
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(framePrompt)}?width=${w}&height=${h}&seed=${frameSeed}&nologo=true&model=flux`;
-
-        gS('Generating frames...', `Frame ${i+1}/${numFrames}`);
-        gP(20 + (i / numFrames) * 45);
-
-        try {
-            const resp = await fetch(url);
-            if (resp.ok) {
-                const blob = await resp.blob();
-                const img = await loadImg(URL.createObjectURL(blob));
-                images.push(img);
-                log(`Fallback frame ${i+1}/${numFrames} ready`, 'info');
-            }
-        } catch(e) {
-            log(`Frame ${i+1} failed`, 'warn');
-        }
-    }
-
-    if (images.length < 1) throw new Error('Failed to generate frames');
-
-    sOk(2); sAct(3);
-    gS('Rendering video...', 'Compositing with motion');
-    gP(70);
-
-    const videoBlob = await renderSmoothVideo(images, dur, w, h);
-
-    sOk(3); sOk(4); gP(100);
-    await displayVideoFromBlob(videoBlob);
-}
-
-async function animateImage(imageBlob, dur) {
-    const img = await loadImg(URL.createObjectURL(imageBlob));
-    const [w, h] = getResolution();
-    const videoBlob = await renderSmoothVideo([img], dur, w, h);
-    await displayVideoFromBlob(videoBlob);
-}
-
-// ===========================================================
-// SMOOTH VIDEO RENDERER (Canvas + MediaRecorder)
-// ===========================================================
-async function renderSmoothVideo(images, duration, w, h) {
-    const fps = 30;
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-
-    const stream = canvas.captureStream(fps);
-    const mime = ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'].find(t=>MediaRecorder.isTypeSupported(t))||'video/webm';
-    const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6_000_000 });
-    const chunks = [];
-    rec.ondataavailable = e => { if(e.data.size) chunks.push(e.data); };
-
-    const totalFrames = fps * duration;
-    const intensity = 1.0;
-    let frame = 0;
-
-    return new Promise(resolve => {
-        rec.onstop = () => resolve(new Blob(chunks, { type: mime }));
-        rec.start(50);
-
-        const interval = 1000 / fps;
-
-        function render() {
-            if (frame >= totalFrames) { rec.stop(); return; }
-
-            const t = frame / totalFrames; // 0→1
-
-            // Which images to blend
-            const segLen = 1 / Math.max(images.length - 1, 1);
-            const segIdx = Math.min(Math.floor(t / segLen), images.length - 2);
-            const segT = images.length > 1 ? (t - segIdx * segLen) / segLen : 0;
-            const imgA = images[Math.max(0, segIdx)];
-            const imgB = images[Math.min(segIdx + 1, images.length - 1)];
-
-            ctx.clearRect(0, 0, w, h);
-
-            // Motion
-            const mt = getMotionParams(t, w, h, intensity);
-
-            // Draw A
-            ctx.save();
-            applyMotion(ctx, mt, w, h);
-            ctx.globalAlpha = 1;
-            drawCover(ctx, imgA, w, h);
-            ctx.restore();
-
-            // Crossfade to B
-            if (images.length > 1) {
-                const fadeAlpha = smoothStep(segT);
-                if (fadeAlpha > 0.01) {
-                    ctx.save();
-                    applyMotion(ctx, mt, w, h);
-                    ctx.globalAlpha = fadeAlpha;
-                    drawCover(ctx, imgB, w, h);
-                    ctx.restore();
-                }
-            }
-
-            // Subtle vignette
-            addVignette(ctx, w, h);
-
-            frame++;
-            if (frame % (fps * 2) === 0) {
-                gS('Rendering...', `${Math.round(frame/fps)}s / ${duration}s`);
-                gP(70 + (frame / totalFrames) * 25);
-            }
-
-            setTimeout(render, interval * 0.5); // render faster than realtime
-        }
-        render();
-    });
-}
-
-function applyMotion(ctx, mt, w, h) {
-    ctx.translate(w/2, h/2);
-    ctx.rotate(mt.rotate);
-    ctx.scale(mt.scale, mt.scale);
-    ctx.translate(-w/2 + mt.x, -h/2 + mt.y);
-}
-
-function getMotionParams(t, w, h, intensity) {
-    const r = { x:0, y:0, scale:1.08, rotate:0 }; // Start slightly zoomed for motion room
-    const maxPan = w * 0.1 * intensity;
-    const maxTilt = h * 0.08 * intensity;
-    const maxZoom = 0.3 * intensity;
-    const st = smoothStep(t);
-
-    switch(S.motion) {
-        case 'pan-left':
-            r.x = -st * maxPan * 2.5;
-            r.y = Math.sin(t*Math.PI*2) * maxTilt * 0.08;
-            r.scale = 1.08 + Math.sin(t*Math.PI) * 0.02;
-            break;
-        case 'pan-right':
-            r.x = st * maxPan * 2.5;
-            r.y = Math.sin(t*Math.PI*2) * maxTilt * 0.08;
-            r.scale = 1.08 + Math.sin(t*Math.PI) * 0.02;
-            break;
-        case 'tilt-up':
-            r.y = -st * maxTilt * 2.5;
-            r.x = Math.sin(t*Math.PI*3) * maxPan * 0.05;
-            r.scale = 1.08;
-            break;
-        case 'tilt-down':
-            r.y = st * maxTilt * 2.5;
-            r.x = Math.sin(t*Math.PI*3) * maxPan * 0.05;
-            r.scale = 1.08;
-            break;
-        case 'zoom-in':
-            r.scale = 1.05 + st * maxZoom;
-            r.x = Math.sin(t*Math.PI) * maxPan * 0.15;
-            r.y = -st * maxTilt * 0.2;
-            break;
-        case 'zoom-out':
-            r.scale = 1.05 + maxZoom * (1 - st);
-            r.x = Math.sin(t*Math.PI) * maxPan * 0.1;
-            break;
-        case 'orbit':
-            r.x = Math.sin(t*Math.PI*2) * maxPan * 1.2;
-            r.y = Math.cos(t*Math.PI*2) * maxTilt * 0.5;
-            r.scale = 1.08 + Math.sin(t*Math.PI*2) * 0.04;
-            r.rotate = Math.sin(t*Math.PI*2) * 0.02;
-            break;
-        case 'dolly':
-            r.scale = 1.05 + st * maxZoom * 0.6;
-            r.y = -st * maxTilt * 0.4;
-            r.rotate = Math.sin(t*Math.PI*4) * 0.003;
-            break;
-        default: // 'none' - subtle drift
-            r.scale = 1.05 + Math.sin(t*Math.PI*2)*0.01;
-            r.x = Math.sin(t*Math.PI*1.5) * 3;
-            r.y = Math.cos(t*Math.PI) * 2;
-            break;
-    }
-    return r;
-}
-
-function drawCover(ctx, img, w, h) {
-    const ir = img.naturalWidth / img.naturalHeight;
-    const cr = w / h;
-    let dw, dh;
-    if (ir > cr) { dh = h; dw = dh * ir; }
-    else { dw = w; dh = dw / ir; }
-    ctx.drawImage(img, (w-dw)/2, (h-dh)/2, dw, dh);
-}
-
-function addVignette(ctx, w, h) {
-    const gradient = ctx.createRadialGradient(w/2, h/2, w*0.3, w/2, h/2, w*0.8);
-    gradient.addColorStop(0, 'rgba(0,0,0,0)');
-    gradient.addColorStop(1, 'rgba(0,0,0,0.25)');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, w, h);
-}
-
-function smoothStep(t) { return t * t * (3 - 2 * t); }
-
-function loadImg(src) {
-    return new Promise((res, rej) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => res(img);
-        img.onerror = () => rej(new Error('Load failed'));
-        img.src = src;
-    });
-}
-
-function getResolution() {
-    const sel = document.getElementById('resSel').value;
-    if (S.ratio === '9:16') {
-        const [w,h] = sel.split('x').map(Number);
-        return [Math.min(w,h), Math.max(w,h)];
-    }
-    if (S.ratio === '1:1') {
-        const [w] = sel.split('x').map(Number);
-        return [w, w];
-    }
-    return sel.split('x').map(Number);
-}
-
-// ===========================================================
-// DISPLAY RESULTS
-// ===========================================================
-async function displayVideoFromUrl(url) {
-    log('Downloading video from: ' + url.substring(0, 80) + '...', 'info');
-    sAct(3); gS('Downloading video...', 'Fetching result');
-
-    try {
-        const resp = await fetch(url);
-        const blob = await resp.blob();
-        log(`Downloaded: ${(blob.size/1024/1024).toFixed(1)}MB (${blob.type})`, 'ok');
-        await displayVideoFromBlob(blob);
-    } catch(e) {
-        // Try direct URL
-        log('Direct download failed, trying direct play: ' + e.message, 'warn');
-        const video = document.getElementById('resultVideo');
-        video.src = url;
-        video.style.display = 'block';
-        document.getElementById('resultImg').style.display = 'none';
-        document.getElementById('ph').style.display = 'none';
-        document.getElementById('vc').classList.add('on');
-        hideOv();
-        setStatus('ok');
-
-        video.onloadeddata = () => {
-            video.play().catch(()=>{});
-            document.getElementById('ppI').className = 'fas fa-pause';
-        };
-        video.ontimeupdate = updateTimeline;
-        document.getElementById('dlBtn').style.display = 'flex';
-        S.resultUrl = url;
-    }
-}
-
-async function displayVideoFromBlob(blob) {
-    S.resultBlob = blob;
-    const url = URL.createObjectURL(blob);
-    const video = document.getElementById('resultVideo');
-
-    video.src = url;
-    video.style.display = 'block';
-    document.getElementById('resultImg').style.display = 'none';
-    document.getElementById('ph').style.display = 'none';
-    document.getElementById('vc').classList.add('on');
-    hideOv();
-    setStatus('ok');
-
-    video.onloadeddata = () => {
-        log(`Video loaded: ${video.videoWidth}x${video.videoHeight}, ${video.duration.toFixed(1)}s`, 'ok');
-        video.play().catch(()=>{});
-        document.getElementById('ppI').className = 'fas fa-pause';
-    };
-    video.ontimeupdate = updateTimeline;
-    video.loop = S.looping;
-    document.getElementById('dlBtn').style.display = 'flex';
-}
-
-// ===========================================================
-// VIDEO CONTROLS
-// ===========================================================
-function ppV() {
-    const v = document.getElementById('resultVideo');
-    if (v.paused) { v.play(); document.getElementById('ppI').className='fas fa-pause'; }
-    else { v.pause(); document.getElementById('ppI').className='fas fa-play'; }
-}
-function seekV(e) {
-    const v = document.getElementById('resultVideo');
-    if (!v.duration) return;
-    const r = document.getElementById('timeline').getBoundingClientRect();
-    v.currentTime = Math.max(0, Math.min(1, (e.clientX-r.left)/r.width)) * v.duration;
-}
-function loopV() {
-    S.looping = !S.looping;
-    document.getElementById('resultVideo').loop = S.looping;
-    document.getElementById('lpI').style.opacity = S.looping ? '1' : '.4';
-}
-function updateTimeline() {
-    const v = document.getElementById('resultVideo');
-    if (!v.duration || !isFinite(v.duration)) return;
-    document.getElementById('tlF').style.width = (v.currentTime/v.duration*100)+'%';
-    document.getElementById('vTm').textContent = `${fmt(v.currentTime)}/${fmt(v.duration)}`;
-}
-function fmt(s) { if(!isFinite(s))return'0:00';const m=Math.floor(s/60);return`${m}:${Math.floor(s%60).toString().padStart(2,'0')}`; }
-function toggleFS() {
-    const el = document.getElementById('vframe');
-    if(document.fullscreenElement) document.exitFullscreen();
-    else el.requestFullscreen().catch(()=>{});
-}
-
-// ===========================================================
-// DOWNLOAD
-// ===========================================================
-function downloadResult() {
-    let blob = S.resultBlob;
-    let url = S.resultUrl;
-    const dur = document.getElementById('durS').value;
-
-    if (blob) {
-        const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `ai-video-${dur}s-${Date.now()}.${ext}`;
-        a.click();
-        toast('Video downloaded!', 'ok');
-        log('Video downloaded', 'ok');
-    } else if (url) {
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `ai-video-${dur}s-${Date.now()}.mp4`;
-        a.target = '_blank';
-        a.click();
-        toast('Download started!', 'ok');
+// ═══════════════════════════════════════════════════════════
+async function generate() {
+  const raw = document.getElementById('prompt').value.trim();
+  if (!raw) { toast('Entrez un prompt!', 'err'); return; }
+  if (ST.generating) return;
+
+  ST.generating = true;
+  ST.cancelled = false;
+  ST.resultBlob = null;
+  ST.resultUrl = null;
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération...';
+  setStatus('busy');
+  showOv();
+
+  const modelInfo = FAL_MODELS[ST.model];
+  log(`━━ Génération: ${modelInfo.name} ━━`, 'info');
+
+  try {
+    await generateWithFal();
+  } catch (e) {
+    if (ST.cancelled) {
+      log('Annulé par l\'utilisateur', 'warn');
+      toast('Annulé', 'warn');
     } else {
-        toast('No video to download', 'err');
+      log('ERREUR: ' + e.message, 'err');
+      toast('Erreur: ' + e.message, 'err');
+      setStatus('err');
     }
+    hideOv();
+  }
+
+  ST.generating = false;
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-play"></i> Générer la Vidéo';
+}
+
+function doCancel() {
+  ST.cancelled = true;
+  log('Annulation demandée...', 'warn');
+}
+
+// ═══════════════════════════════════════════════════════════
+// FAL.AI GENERATION
+// ═══════════════════════════════════════════════════════════
+async function generateWithFal() {
+  const prompt = buildPrompt();
+  const neg = document.getElementById('negP').value;
+  const dur = parseInt(document.getElementById('durS').value);
+  const ratio = ST.ratio;
+  const cfg = parseFloat(document.getElementById('cfgS').value);
+  const modelInfo = FAL_MODELS[ST.model];
+  const body = modelInfo.buildBody(prompt, neg, dur, ratio, cfg);
+
+  log(`Modèle: ${modelInfo.endpoint}`, 'info');
+  log(`Prompt: ${prompt.substring(0, 120)}...`, 'info');
+  log(`Durée: ${dur}s | Ratio: ${ratio} | CFG: ${cfg}`, 'info');
+
+  sAct(1);
+  oStat(`Envoi à ${modelInfo.name}...`, 'Connexion FAL.ai queue');
+  oFill(5);
+  oEta(`Durée estimée: ${modelInfo.eta}`);
+
+  const queueUrl = `https://queue.fal.run/${modelInfo.endpoint}`;
+  log(`POST → ${queueUrl}`, 'info');
+
+  let submitResp;
+  try {
+    submitResp = await fetch(queueUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Key ${FAL_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+  } catch (netErr) {
+    throw new Error(`Réseau: ${netErr.message}. Vérifiez votre connexion internet.`);
+  }
+
+  if (!submitResp.ok) {
+    const errText = await submitResp.text().catch(() => '');
+    log(`FAL submit error ${submitResp.status}: ${errText.substring(0, 200)}`, 'err');
+
+    // Try fallback models
+    if (submitResp.status === 422 || submitResp.status === 404) {
+      log('Endpoint non disponible, essai fallback...', 'warn');
+      await tryFallbackModels(prompt, neg, dur, ratio, cfg);
+      return;
+    }
+    if (submitResp.status === 402) {
+      throw new Error('Crédits FAL.ai épuisés. Rechargez votre compte sur fal.ai');
+    }
+    if (submitResp.status === 401) {
+      throw new Error('Clé FAL.ai invalide ou expirée. Régénérez-la sur fal.ai/dashboard/keys');
+    }
+    throw new Error(`FAL.ai erreur ${submitResp.status}: ${errText.substring(0, 150)}`);
+  }
+
+  const sub = await submitResp.json();
+  log(`✅ Tâche soumise · request_id: ${sub.request_id}`, 'ok');
+
+  if (!sub.request_id) {
+    throw new Error('Pas de request_id dans la réponse FAL.ai');
+  }
+
+  sOk(1);
+  sAct(2);
+  oStat(`${modelInfo.name} génère...`, 'Traitement en cours sur les serveurs FAL.ai');
+  oFill(12);
+
+  // POLL for result
+  const result = await pollFalQueue(sub.request_id, modelInfo.endpoint);
+
+  // Extract video URL
+  const videoUrl = extractVideoUrl(result);
+  if (!videoUrl) {
+    log('Structure réponse: ' + JSON.stringify(Object.keys(result || {})), 'warn');
+    throw new Error('Aucune URL vidéo dans la réponse. Modèle peut-être incompatible.');
+  }
+
+  log(`✅ Vidéo générée! URL: ${videoUrl.substring(0, 80)}...`, 'ok');
+  sOk(2);
+  sAct(3);
+  oStat('Téléchargement de la vidéo...', 'Récupération depuis FAL.ai CDN');
+  oFill(88);
+
+  await downloadAndPlay(videoUrl, dur);
+}
+
+// ═══════════════════════════════════════════════════════════
+// FAL QUEUE POLLING
+// ═══════════════════════════════════════════════════════════
+async function pollFalQueue(requestId, endpoint) {
+  const statusUrl = `https://queue.fal.run/${endpoint}/requests/${requestId}/status`;
+  const resultUrl = `https://queue.fal.run/${endpoint}/requests/${requestId}`;
+  let attempts = 0;
+  let startTime = Date.now();
+
+  log(`Poll démarré: ${requestId}`, 'info');
+
+  while (attempts < 300) {
+    if (ST.cancelled) throw new Error('Annulé');
+    await sleep(3000);
+    attempts++;
+
+    try {
+      const r = await fetch(statusUrl, {
+        headers: { 'Authorization': `Key ${FAL_KEY}` }
+      });
+
+      if (!r.ok) {
+        log(`Poll status ${r.status} (tentative ${attempts})`, 'warn');
+        continue;
+      }
+
+      const d = await r.json();
+      const elapsed = Math.round((Date.now() - startTime) / 1000);
+      const pct = Math.min(12 + (elapsed / 180) * 75, 87);
+      oFill(pct);
+      oStat(`${FAL_MODELS[ST.model].name} génère...`, `Status: ${d.status} · ${elapsed}s écoulées`);
+      oEta(`${attempts * 3}s · Logs: ${d.logs?.length || 0} entrées`);
+
+      // Log FAL logs if any
+      if (d.logs && d.logs.length > 0 && attempts % 3 === 0) {
+        const lastLog = d.logs[d.logs.length - 1];
+        if (lastLog?.message) log(`FAL log: ${lastLog.message}`, 'info');
+      }
+
+      if (d.status === 'COMPLETED') {
+        log(`✅ Statut COMPLETED après ${elapsed}s`, 'ok');
+
+        // Fetch actual result
+        const rr = await fetch(resultUrl, {
+          headers: { 'Authorization': `Key ${FAL_KEY}` }
+        });
+        if (!rr.ok) throw new Error('Impossible de récupérer le résultat final');
+        const data = await rr.json();
+        log('Résultat reçu, extraction URL vidéo...', 'ok');
+        return data;
+      }
+
+      if (d.status === 'FAILED') {
+        const errMsg = d.error || JSON.stringify(d).substring(0, 200);
+        log(`❌ Statut FAILED: ${errMsg}`, 'err');
+        throw new Error(`FAL.ai génération échouée: ${errMsg}`);
+      }
+
+      if (d.status === 'IN_QUEUE') {
+        const pos = d.queue_position || '?';
+        oStat('En attente dans la file...', `Position: ${pos} · ${elapsed}s`);
+        log(`File d'attente: position ${pos}`, attempts % 5 === 0 ? 'info' : '');
+      }
+
+      if (d.status === 'IN_PROGRESS') {
+        oStat(`${FAL_MODELS[ST.model].name} génère...`, `Traitement · ${elapsed}s`);
+      }
+
+    } catch (e) {
+      if (e.message.includes('Annulé') || e.message.includes('FAILED') || e.message.includes('échouée')) {
+        throw e;
+      }
+      log(`Poll erreur (tentative ${attempts}): ${e.message}`, 'warn');
+    }
+  }
+  throw new Error(`Timeout après ${attempts * 3}s. Le serveur n'a pas répondu.`);
+}
+
+// ═══════════════════════════════════════════════════════════
+// FALLBACK — Try other FAL models
+// ═══════════════════════════════════════════════════════════
+async function tryFallbackModels(prompt, neg, dur, ratio, cfg) {
+  const fallbacks = [
+    { endpoint: 'fal-ai/kling-video/v1.5/standard/text-to-video', body: { prompt, negative_prompt: neg, duration: dur <= 5 ? '5' : '10', aspect_ratio: ratio }},
+    { endpoint: 'fal-ai/kling-video/v1/standard/text-to-video', body: { prompt, negative_prompt: neg, duration: dur <= 5 ? '5' : '10', aspect_ratio: ratio }},
+    { endpoint: 'fal-ai/wan-t2v', body: { prompt, negative_prompt: neg, num_frames: 81 }},
+    { endpoint: 'fal-ai/minimax-video', body: { prompt }}
+  ];
+
+  for (const fb of fallbacks) {
+    if (ST.cancelled) throw new Error('Annulé');
+    log(`Essai fallback: ${fb.endpoint}`, 'warn');
+    try {
+      const r = await fetch(`https://queue.fal.run/${fb.endpoint}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Key ${FAL_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(fb.body)
+      });
+      if (r.ok) {
+        const sub = await r.json();
+        if (sub.request_id) {
+          log(`✅ Fallback OK: ${fb.endpoint} · ${sub.request_id}`, 'ok');
+          sOk(1); sAct(2);
+          oStat('Génération en cours (fallback)...', fb.endpoint);
+          const result = await pollFalQueue(sub.request_id, fb.endpoint);
+          const videoUrl = extractVideoUrl(result);
+          if (videoUrl) {
+            sOk(2); sAct(3);
+            await downloadAndPlay(videoUrl, dur);
+            return;
+          }
+        }
+      }
+      log(`Fallback ${fb.endpoint}: ${r.status}`, 'warn');
+    } catch (e) {
+      if (e.message.includes('Annulé')) throw e;
+      log(`Fallback ${fb.endpoint} erreur: ${e.message}`, 'warn');
+    }
+  }
+  throw new Error('Tous les modèles FAL.ai ont échoué. Vérifiez vos crédits sur fal.ai/dashboard');
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXTRACT VIDEO URL from FAL response
+// ═══════════════════════════════════════════════════════════
+function extractVideoUrl(data) {
+  if (!data) return null;
+  // Common FAL response structures
+  return data.video?.url
+    || data.video_url
+    || data.url
+    || (Array.isArray(data.video) ? data.video[0]?.url : null)
+    || data.output?.video_url
+    || data.output?.url
+    || (Array.isArray(data.output) ? data.output[0] : null)
+    || null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// DOWNLOAD + PLAY VIDEO
+// ═══════════════════════════════════════════════════════════
+async function downloadAndPlay(url, dur) {
+  log(`Téléchargement: ${url.substring(0, 100)}`, 'info');
+
+  let blob = null;
+  // Try direct download
+  try {
+    const r = await fetch(url, { mode: 'cors' });
+    if (r.ok) {
+      blob = await r.blob();
+      log(`✅ Téléchargé: ${(blob.size / 1024 / 1024).toFixed(1)}MB · type: ${blob.type}`, 'ok');
+    }
+  } catch (e) {
+    log(`Download direct échoué: ${e.message}, essai proxy...`, 'warn');
+    try {
+      const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+      const r2 = await fetch(proxyUrl);
+      if (r2.ok) {
+        blob = await r2.blob();
+        log(`✅ Téléchargé via proxy: ${(blob.size / 1024 / 1024).toFixed(1)}MB`, 'ok');
+      }
+    } catch (e2) {
+      log('Proxy aussi échoué, lecture directe URL', 'warn');
+    }
+  }
+
+  sOk(3);
+  sAct(4);
+  oStat('Ajout de la bande son...', 'Génération audio Web Audio API');
+  oFill(93);
+
+  await playVideo(blob, url, dur);
+}
+
+async function playVideo(blob, directUrl, dur) {
+  const v = document.getElementById('vid');
+
+  if (blob && blob.size > 1000) {
+    ST.resultBlob = blob;
+    v.src = URL.createObjectURL(blob);
+    log('Lecture depuis blob local', 'info');
+  } else {
+    ST.resultUrl = directUrl;
+    v.src = directUrl;
+    log('Lecture depuis URL directe', 'warn');
+  }
+
+  v.style.display = 'block';
+  v.volume = document.getElementById('volS').value / 100;
+  v.loop = ST.looping;
+
+  // Wait for video to be ready
+  await new Promise((res) => {
+    let resolved = false;
+    const done = () => { if (!resolved) { resolved = true; res(); } };
+    v.onloadeddata = done;
+    v.oncanplay = done;
+    v.onerror = (e) => {
+      log('Erreur lecture vidéo: ' + v.error?.message, 'err');
+      done();
+    };
+    setTimeout(done, 10000);
+  });
+
+  // Start audio
+  await startAudio(dur || parseInt(document.getElementById('durS').value));
+
+  sOk(4);
+  oFill(100);
+  oStat('✅ Vidéo prête!', 'Génération terminée avec succès');
+  await sleep(700);
+
+  hideOv();
+  document.getElementById('ph').style.display = 'none';
+  document.getElementById('vc').classList.add('on');
+  document.getElementById('dlBtn').style.display = 'flex';
+
+  // Update info
+  const infoStr = v.videoWidth
+    ? `${v.videoWidth}×${v.videoHeight} · ${v.duration?.toFixed(1)}s · ${FAL_MODELS[ST.model].name}`
+    : `${FAL_MODELS[ST.model].name} · ${dur}s`;
+  document.getElementById('prevInfo').textContent = infoStr;
+
+  setStatus('ok');
+  toast(`✅ Vidéo générée! ${infoStr}`, 'ok');
+  log(`━━ Terminé: ${infoStr} ━━`, 'ok');
+
+  v.play().catch(() => {
+    log('Lecture auto bloquée, cliquez play', 'warn');
+    document.getElementById('ppI').className = 'fas fa-play';
+  });
+  document.getElementById('ppI').className = 'fas fa-pause';
+}
+
+// ═══════════════════════════════════════════════════════════
+// VIDEO CONTROLS
+// ═══════════════════════════════════════════════════════════
+const V = () => document.getElementById('vid');
+
+function ppV() {
+  const v = V();
+  if (v.paused) { v.play(); document.getElementById('ppI').className = 'fas fa-pause'; }
+  else { v.pause(); document.getElementById('ppI').className = 'fas fa-play'; }
+}
+
+function muteV() {
+  const v = V();
+  v.muted = !v.muted;
+  document.getElementById('muteB').innerHTML = v.muted
+    ? '<i class="fas fa-volume-mute"></i>'
+    : '<i class="fas fa-volume-up"></i>';
+}
+
+function loopV() {
+  ST.looping = !ST.looping;
+  V().loop = ST.looping;
+  document.getElementById('lpI').style.opacity = ST.looping ? '1' : '.4';
+  toast(ST.looping ? 'Boucle activée' : 'Boucle désactivée', 'inf');
+}
+
+function seekV(e) {
+  const v = V();
+  if (!v.duration || !isFinite(v.duration)) return;
+  const r = document.getElementById('vtl').getBoundingClientRect();
+  v.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * v.duration;
+}
+
+function toggleFS() {
+  const el = document.getElementById('vframe');
+  if (document.fullscreenElement) document.exitFullscreen();
+  else el.requestFullscreen().catch(() => {});
+}
+
+document.getElementById('vid').addEventListener('timeupdate', function () {
+  if (!this.duration || !isFinite(this.duration)) return;
+  document.getElementById('vtlF').style.width = (this.currentTime / this.duration * 100) + '%';
+  document.getElementById('vtm').textContent = ft(this.currentTime) + ' / ' + ft(this.duration);
+});
+
+function ft(s) {
+  if (!isFinite(s) || s < 0) return '0:00';
+  return Math.floor(s / 60) + ':' + Math.floor(s % 60).toString().padStart(2, '0');
+}
+
+// ═══════════════════════════════════════════════════════════
+// DOWNLOAD
+// ═══════════════════════════════════════════════════════════
+function doDownload() {
+  if (ST.resultBlob) {
+    const ext = ST.resultBlob.type.includes('mp4') ? 'mp4' : 'webm';
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(ST.resultBlob);
+    a.download = `videogen-${ST.model}-${Date.now()}.${ext}`;
+    a.click();
+    toast('Vidéo téléchargée!', 'ok');
+    log('Download local: ' + ext, 'ok');
+  } else if (ST.resultUrl) {
+    window.open(ST.resultUrl, '_blank');
+    toast('Vidéo ouverte dans un nouvel onglet', 'inf');
+    log('Download URL directe', 'warn');
+  } else {
+    toast('Aucune vidéo disponible', 'err');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// WEB AUDIO ENGINE — Bande son générée
+// ═══════════════════════════════════════════════════════════
+function stopAudio() {
+  ST.audioNodes.forEach(n => { try { n.stop && n.stop(0); n.disconnect && n.disconnect(); } catch (e) {} });
+  ST.audioNodes = [];
+  if (ST.vizId) { cancelAnimationFrame(ST.vizId); ST.vizId = null; }
+  document.getElementById('audioViz').classList.remove('on');
+}
+
+async function startAudio(dur) {
+  stopAudio();
+  const type = document.getElementById('audioType').value;
+  if (type === 'none') { log('Audio: désactivé', 'info'); return; }
+
+  try {
+    ST.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ST.audioCtx.state === 'suspended') await ST.audioCtx.resume();
+
+    ST.audioGain = ST.audioCtx.createGain();
+    ST.audioGain.gain.value = document.getElementById('volS').value / 100 * 0.55;
+
+    ST.analyser = ST.audioCtx.createAnalyser();
+    ST.analyser.fftSize = 512;
+
+    ST.audioGain.connect(ST.analyser);
+    ST.analyser.connect(ST.audioCtx.destination);
+
+    buildAudioscape(type, dur);
+
+    document.getElementById('audioViz').classList.add('on');
+    const viz = document.getElementById('audioViz');
+    viz.width = viz.parentElement?.clientWidth - 32 || 260;
+    drawAudioViz();
+
+    log(`Audio: "${type}" généré (${dur}s)`, 'ok');
+  } catch (e) {
+    log('Audio erreur: ' + e.message, 'warn');
+  }
+}
+
+function buildAudioscape(type, dur) {
+  const ctx = ST.audioCtx;
+  const master = ST.audioGain;
+  const now = ctx.currentTime;
+
+  // Audio presets
+  const presets = {
+    cinematic: {
+      pads: [
+        { f: 48, type: 'sawtooth', amp: .07, lfo: .08, lfoAmp: .02 },
+        { f: 96, type: 'sine', amp: .1, lfo: .06, lfoAmp: .025 },
+        { f: 144, type: 'triangle', amp: .07, lfo: .1, lfoAmp: .018 },
+        { f: 192, type: 'sine', amp: .05, lfo: .14, lfoAmp: .01 },
+        { f: 288, type: 'sine', amp: .04, lfo: .2, lfoAmp: .008 },
+      ],
+      noiseAmp: .012, noiseFreq: 600, reverb: true, swell: true, swellFreq: 196, swellAmp: .06
+    },
+    ambient: {
+      pads: [
+        { f: 55, type: 'sine', amp: .12, lfo: .25, lfoAmp: .04 },
+        { f: 82.4, type: 'sine', amp: .09, lfo: .18, lfoAmp: .03 },
+        { f: 110, type: 'triangle', amp: .07, lfo: .15, lfoAmp: .025 },
+        { f: 164.8, type: 'sine', amp: .05, lfo: .35, lfoAmp: .015 },
+        { f: 220, type: 'sine', amp: .04, lfo: .4, lfoAmp: .01 },
+      ],
+      noiseAmp: .018, noiseFreq: 400, reverb: true
+    },
+    action: {
+      pads: [
+        { f: 55, type: 'sawtooth', amp: .1, lfo: .5, lfoAmp: .04 },
+        { f: 110, type: 'square', amp: .07, lfo: 1.2, lfoAmp: .04 },
+        { f: 165, type: 'sawtooth', amp: .06, lfo: .8, lfoAmp: .03 },
+        { f: 220, type: 'sine', amp: .08, lfo: .6, lfoAmp: .03 },
+        { f: 330, type: 'triangle', amp: .04, lfo: .9, lfoAmp: .02 },
+      ],
+      noiseAmp: .045, noiseFreq: 3000, percussion: true, bpm: 140, swellFreq: 220, swellAmp: .08, swell: true
+    },
+    dramatic: {
+      pads: [
+        { f: 41.2, type: 'sine', amp: .16, lfo: .12, lfoAmp: .055 },
+        { f: 82.4, type: 'sawtooth', amp: .1, lfo: .09, lfoAmp: .035 },
+        { f: 123.5, type: 'triangle', amp: .07, lfo: .11, lfoAmp: .025 },
+        { f: 164.8, type: 'sine', amp: .06, lfo: .15, lfoAmp: .018 },
+        { f: 246, type: 'sine', amp: .04, lfo: .22, lfoAmp: .01 },
+      ],
+      noiseAmp: .022, noiseFreq: 500, swell: true, swellFreq: 164.8, swellAmp: .09
+    },
+    peaceful: {
+      pads: [
+        { f: 261.6, type: 'sine', amp: .07, lfo: .35, lfoAmp: .02 },
+        { f: 329.6, type: 'sine', amp: .06, lfo: .28, lfoAmp: .015 },
+        { f: 392, type: 'sine', amp: .05, lfo: .32, lfoAmp: .012 },
+        { f: 523.2, type: 'triangle', amp: .04, lfo: .42, lfoAmp: .01 },
+        { f: 659.2, type: 'sine', amp: .03, lfo: .5, lfoAmp: .008 },
+      ],
+      noiseAmp: .007, noiseFreq: 300, reverb: true
+    },
+    mystery: {
+      pads: [
+        { f: 55, type: 'sine', amp: .09, lfo: .18, lfoAmp: .035 },
+        { f: 73.4, type: 'sine', amp: .07, lfo: .14, lfoAmp: .028 },
+        { f: 92.5, type: 'triangle', amp: .06, lfo: .12, lfoAmp: .022 },
+        { f: 138.6, type: 'sine', amp: .05, lfo: .22, lfoAmp: .015 },
+        { f: 184.9, type: 'sine', amp: .04, lfo: .3, lfoAmp: .01 },
+      ],
+      noiseAmp: .028, noiseFreq: 800, filter: true
+    },
+    scifi: {
+      pads: [
+        { f: 110, type: 'square', amp: .06, lfo: .3, lfoAmp: .03 },
+        { f: 165, type: 'sawtooth', amp: .05, lfo: .45, lfoAmp: .025 },
+        { f: 220, type: 'sine', amp: .07, lfo: .25, lfoAmp: .02 },
+        { f: 440, type: 'sine', amp: .04, lfo: .6, lfoAmp: .015 },
+        { f: 880, type: 'triangle', amp: .03, lfo: .8, lfoAmp: .01 },
+      ],
+      noiseAmp: .03, noiseFreq: 5000, filter: true, swell: true, swellFreq: 440, swellAmp: .05
+    }
+  };
+
+  const cfg = presets[type] || presets.ambient;
+
+  // Pads
+  cfg.pads.forEach((pd, i) => {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    const lfo = ctx.createOscillator();
+    const lg = ctx.createGain();
+
+    osc.type = pd.type;
+    osc.frequency.value = pd.f;
+    g.gain.value = 0;
+
+    lfo.frequency.value = pd.lfo;
+    lg.gain.value = pd.lfoAmp;
+    lfo.connect(lg); lg.connect(g.gain);
+
+    // Optional filter
+    if (cfg.filter) {
+      const flt = ctx.createBiquadFilter();
+      flt.type = 'bandpass';
+      flt.frequency.value = pd.f * 2;
+      flt.Q.value = 3;
+      osc.connect(flt); flt.connect(g);
+      ST.audioNodes.push(flt);
+    } else {
+      osc.connect(g);
+    }
+    g.connect(master);
+
+    const delay = i * 0.4;
+    const fade = 1.8;
+    g.gain.setValueAtTime(0, now + delay);
+    g.gain.linearRampToValueAtTime(pd.amp, now + delay + fade);
+    g.gain.setValueAtTime(pd.amp, now + dur - fade);
+    g.gain.linearRampToValueAtTime(0, now + dur);
+
+    osc.start(now + delay); lfo.start(now + delay);
+    osc.stop(now + dur + 1); lfo.stop(now + dur + 1);
+    ST.audioNodes.push(osc, g, lfo, lg);
+  });
+
+  // Noise
+  if (cfg.noiseAmp > 0) {
+    const bufLen = Math.min(ctx.sampleRate * dur, ctx.sampleRate * 30);
+    const buf = ctx.createBuffer(2, bufLen, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = buf.getChannelData(ch);
+      for (let i = 0; i < bufLen; i++) d[i] = (Math.random() * 2 - 1);
+    }
+    const ns = ctx.createBufferSource();
+    ns.buffer = buf;
+    const nf = ctx.createBiquadFilter();
+    nf.type = 'lowpass';
+    nf.frequency.value = cfg.noiseFreq;
+    nf.Q.value = 0.8;
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(0, now);
+    ng.gain.linearRampToValueAtTime(cfg.noiseAmp, now + 2);
+    ng.gain.setValueAtTime(cfg.noiseAmp, now + dur - 2);
+    ng.gain.linearRampToValueAtTime(0, now + dur);
+    ns.connect(nf); nf.connect(ng); ng.connect(master);
+    ns.start(now); ns.stop(now + dur);
+    ST.audioNodes.push(ns, nf, ng);
+  }
+
+  // Swell
+  if (cfg.swell) {
+    const so = ctx.createOscillator();
+    const sg = ctx.createGain();
+    so.type = 'sine';
+    so.frequency.value = cfg.swellFreq || 196;
+    sg.gain.setValueAtTime(0, now);
+    sg.gain.linearRampToValueAtTime(cfg.swellAmp || .06, now + dur * .45);
+    sg.gain.linearRampToValueAtTime(cfg.swellAmp * .3 || .02, now + dur * .75);
+    sg.gain.linearRampToValueAtTime(0, now + dur);
+    so.connect(sg); sg.connect(master);
+    so.start(now); so.stop(now + dur);
+    ST.audioNodes.push(so, sg);
+  }
+
+  // Percussion
+  if (cfg.percussion) {
+    const bpm = cfg.bpm || 120;
+    const bi = 60 / bpm;
+    const beats = Math.floor(dur / bi);
+    for (let b = 0; b < beats; b++) {
+      const t0 = now + b * bi;
+      // Kick
+      const k = ctx.createOscillator();
+      const kg = ctx.createGain();
+      k.type = 'sine';
+      k.frequency.setValueAtTime(180, t0);
+      k.frequency.exponentialRampToValueAtTime(0.001, t0 + .25);
+      kg.gain.setValueAtTime(.3, t0);
+      kg.gain.exponentialRampToValueAtTime(0.001, t0 + .25);
+      k.connect(kg); kg.connect(master);
+      k.start(t0); k.stop(t0 + .3);
+      ST.audioNodes.push(k, kg);
+
+      // Snare (on beat 2 and 4)
+      if (b % 2 === 1) {
+        const bufS = ctx.createBuffer(1, ctx.sampleRate * .1, ctx.sampleRate);
+        const dS = bufS.getChannelData(0);
+        for (let i = 0; i < dS.length; i++) dS[i] = Math.random() * 2 - 1;
+        const sn = ctx.createBufferSource();
+        sn.buffer = bufS;
+        const sf = ctx.createBiquadFilter();
+        sf.type = 'bandpass'; sf.frequency.value = 3000; sf.Q.value = .5;
+        const sg2 = ctx.createGain();
+        sg2.gain.setValueAtTime(.12, t0 + bi * .5);
+        sg2.gain.exponentialRampToValueAtTime(0.001, t0 + bi * .5 + .12);
+        sn.connect(sf); sf.connect(sg2); sg2.connect(master);
+        sn.start(t0 + bi * .5); sn.stop(t0 + bi * .5 + .15);
+        ST.audioNodes.push(sn, sf, sg2);
+      }
+    }
+  }
+}
+
+function drawAudioViz() {
+  const canvas = document.getElementById('audioViz');
+  if (!canvas.classList.contains('on')) return;
+  const ctx2 = canvas.getContext('2d');
+  const analyser = ST.analyser;
+  if (!analyser) return;
+  const bufLen = analyser.frequencyBinCount;
+  const data = new Uint8Array(bufLen);
+
+  function draw() {
+    ST.vizId = requestAnimationFrame(draw);
+    analyser.getByteFrequencyData(data);
+    ctx2.clearRect(0, 0, canvas.width, canvas.height);
+    const bw = (canvas.width / bufLen) * 2.2;
+    for (let i = 0; i < bufLen; i++) {
+      const bh = (data[i] / 255) * canvas.height;
+      const hue = 250 + (i / bufLen) * 120;
+      const alpha = .7 + (data[i] / 255) * .3;
+      ctx2.fillStyle = `hsla(${hue},70%,60%,${alpha})`;
+      ctx2.fillRect(i * (bw + .5), canvas.height - bh, bw, bh);
+    }
+  }
+  draw();
 }
 </script>
 </body>
